@@ -1,0 +1,23 @@
+# Entornos de desarrollo / Editores (IDE)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Logs y bases de datos locales
+*.log
+*.sqlite
+
+# Carpetas de compilación genéricas
+build/
+bin/
+obj/
+out/
+
+# Variables de entorno (¡Muy importante para la seguridad!)
+.env
+.env.local
