@@ -1,9 +1,9 @@
-package com.smartstay.application_mobile_frontend.presentation.accommodations.viewmodels
+package com.smartstay.application_mobile_frontend.feature.accommodation.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smartstay.application_mobile_frontend.domain.model.accommodations.Hotel
-import com.smartstay.application_mobile_frontend.domain.usecase.accommodations.GetHotelsUseCase
+import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.Hotel
+import com.smartstay.application_mobile_frontend.feature.accommodation.domain.usecase.GetHotelsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,3 +46,4 @@ class HotelListViewModel @Inject constructor(
         }
     }
 }
+

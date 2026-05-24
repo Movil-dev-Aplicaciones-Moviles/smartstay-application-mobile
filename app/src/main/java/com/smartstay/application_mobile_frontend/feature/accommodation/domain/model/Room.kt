@@ -1,4 +1,6 @@
-package com.smartstay.application_mobile_frontend.domain.model.accommodations
+package com.smartstay.application_mobile_frontend.feature.accommodation.domain.model
+
+import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.RoomType
 
 data class Room(
     val id: Int,
@@ -20,3 +22,5 @@ data class Room(
         return "$${"%.2f".format(price)}"
     }
 }
+
+

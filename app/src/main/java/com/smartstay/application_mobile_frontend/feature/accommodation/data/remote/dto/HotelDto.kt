@@ -1,6 +1,6 @@
-package com.smartstay.application_mobile_frontend.domain.model.accommodations
+package com.smartstay.application_mobile_frontend.feature.accommodation.data.remote.dto
 
-data class Hotel(
+data class HotelDto(
     val id: Int,
     val hostId: Int,
     val name: String,
@@ -10,6 +10,6 @@ data class Hotel(
     val imageUrl: String,
     val description: String,
     val type: String,
-    val amenities: List<String>,
-    val lowestPrice: Double
+    val amenities: List<String>
 )
+

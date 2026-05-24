@@ -1,7 +1,7 @@
-package com.smartstay.application_mobile_frontend.data.mapper
+package com.smartstay.application_mobile_frontend.feature.accommodation.data.mapper
 
-import com.smartstay.application_mobile_frontend.data.remote.accommodations.dto.HotelDto
-import com.smartstay.application_mobile_frontend.domain.model.accommodations.Hotel
+import com.smartstay.application_mobile_frontend.feature.accommodation.data.remote.dto.HotelDto
+import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.Hotel
 
 fun HotelDto.toDomain(): Hotel {
     return Hotel(
