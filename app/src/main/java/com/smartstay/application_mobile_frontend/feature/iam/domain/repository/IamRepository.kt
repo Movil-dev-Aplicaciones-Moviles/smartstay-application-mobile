@@ -10,4 +10,5 @@ interface IamRepository {
     suspend fun signUp(command: SignUpCommand): Boolean
     fun signOut()
     fun isSignedIn(): Boolean
+    fun getUserRole(): String
 }

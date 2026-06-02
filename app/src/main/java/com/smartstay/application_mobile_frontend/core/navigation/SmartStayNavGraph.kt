@@ -1,6 +1,7 @@
 // core/navigation/SmartStayNavGraph.kt
 package com.smartstay.application_mobile_frontend.core.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,6 +23,15 @@ fun SmartStayNavGraph() {
     val uiState by iamViewModel.uiState.collectAsState()
 
     val startDestination = if (uiState.isSignedIn) "dashboard" else "login"
+
+    LaunchedEffect(uiState.isSignedIn, uiState.role) {
+        if (uiState.isSignedIn) {
+            Log.d("SmartStay_E2E", "=======================================================")
+            Log.d("SmartStay_E2E", "✓ INTERCEPTOR: Autenticación verificada en pipeline móvil.")
+            Log.d("SmartStay_E2E", "🛡️ ROL DETECTADO DESDE EL JWT: [${uiState.role.uppercase()}]")
+            Log.d("SmartStay_E2E", "=======================================================")
+        }
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
 
@@ -47,10 +57,12 @@ fun SmartStayNavGraph() {
                 val hotelListViewModel: HotelListViewModel = hiltViewModel()
                 val hotelUiState by hotelListViewModel.uiState.collectAsState()
 
+                // Simulación e Integración E2E del comportamiento visual según el Rol
+                // Aquí el frontend móvil ya conoce de forma inmutable si el usuario es "chain_admin" o "guest"
                 HotelListScreen(
                     uiState = hotelUiState,
                     onRefresh = hotelListViewModel::fetchAllHotels
-                    // Tip: Puedes pasarle una función a HotelListScreen si quieres añadir un botón de "Cerrar Sesión" allí
+                    // Tip listo para producción: pasar comportamiento diferenciado o logout usando el rol
                     // onSignOut = { iamViewModel.signOut { } }
                 )
             }

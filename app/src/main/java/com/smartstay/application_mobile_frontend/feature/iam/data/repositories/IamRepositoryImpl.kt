@@ -17,9 +17,7 @@ class IamRepositoryImpl @Inject constructor(
 
     override suspend fun signIn(command: SignInCommand): User {
         val resource = api.signIn(command)
-
         sessionManager.saveToken(resource.token)
-
         return resource.toDomain()
     }
 
@@ -31,4 +29,6 @@ class IamRepositoryImpl @Inject constructor(
     override fun signOut() = sessionManager.clearSession()
 
     override fun isSignedIn(): Boolean = sessionManager.getToken() != null
+
+    override fun getUserRole(): String = sessionManager.getUserRole()
 }

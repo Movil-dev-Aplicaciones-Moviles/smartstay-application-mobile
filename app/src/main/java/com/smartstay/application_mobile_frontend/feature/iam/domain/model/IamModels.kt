@@ -8,5 +8,12 @@ data class User(
     val roles: List<String>
 )
 
-data class SignInCommand(val username: String, val password: String)
-data class SignUpCommand(val username: String, val password: String, val role: String? = null, val name: String? = null)
+data class SignInCommand(
+    val username: String,
+    val password: String
+)
+
+data class SignUpCommand(
+    val username: String,
+    val password: String
+)
