@@ -9,17 +9,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.SignInCommand
+import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.AuthEvent
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
 
+/**
+ * UI Composable for user authentication.
+ * * @param viewModel State holder and business logic processor for Identity and Access Management.
+ * @param onNavigate Lambda callback triggered when a successful navigation event occurs.
+ */
+@Suppress("SpellCheckingInspection") // Ignora las advertencias de typos en español ("Usuario", "Contraseña", etc.)
 @Composable
 fun SignInScreen(
     viewModel: IamViewModel,
-    onNavigateToDashboard: () -> Unit
+    onNavigate: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // Escucha eventos puntuales (navegación o errores)
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.Navigate -> {
+                    onNavigate(event.route) // Aquí usamos el destino dictado por el Resolver
+                }
+                is AuthEvent.Error -> {
+                    // Manejo opcional de errores, como mostrar un Snackbar
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -56,13 +77,20 @@ fun SignInScreen(
 
         Button(
             onClick = {
-                viewModel.signIn(SignInCommand(username, password), onSuccess = onNavigateToDashboard)
+                viewModel.signIn(
+                    SignInCommand(username = username, password = password)
+                )
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
             enabled = !uiState.isLoading && username.isNotBlank() && password.isNotBlank()
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             } else {
                 Text("Iniciar Sesión")
             }
