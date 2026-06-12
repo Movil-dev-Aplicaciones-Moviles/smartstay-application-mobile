@@ -1,8 +1,7 @@
-// core/di/NetworkModule.kt
 package com.smartstay.application_mobile_frontend.core.di
 
 import com.smartstay.application_mobile_frontend.core.network.AuthInterceptor
-import com.smartstay.application_mobile_frontend.feature.accommodation.data.remote.AccommodationApiService
+import com.smartstay.application_mobile_frontend.core.network.ApiConstants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,15 +27,9 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://application-mobile-backend.onrender.com/")
+            .baseUrl(ApiConstants.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideAccommodationApiService(retrofit: Retrofit): AccommodationApiService {
-        return retrofit.create(AccommodationApiService::class.java)
     }
 }

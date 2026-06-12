@@ -1,8 +1,8 @@
 package com.smartstay.application_mobile_frontend.feature.iam.data.di
 
-import com.smartstay.application_mobile_frontend.feature.iam.data.remote.IamApiService
-import com.smartstay.application_mobile_frontend.feature.iam.data.repositories.IamRepositoryImpl
-import com.smartstay.application_mobile_frontend.feature.iam.domain.repository.IamRepository
+import com.smartstay.application_mobile_frontend.feature.iam.data.remote.AuthApiService
+import com.smartstay.application_mobile_frontend.feature.iam.data.repository.AuthRepositoryImpl
+import com.smartstay.application_mobile_frontend.feature.iam.domain.repository.AuthRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -13,11 +13,11 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class IamRepositoryModule {
+abstract class AuthRepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindIamRepository(impl: IamRepositoryImpl): IamRepository
+    abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
 }
 
 @Module
@@ -26,7 +26,7 @@ object IamApiModule {
 
     @Provides
     @Singleton
-    fun provideIamApiService(retrofit: Retrofit): IamApiService {
-        return retrofit.create(IamApiService::class.java)
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
+        return retrofit.create(AuthApiService::class.java)
     }
 }

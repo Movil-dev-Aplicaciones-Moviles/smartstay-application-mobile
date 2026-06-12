@@ -10,8 +10,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListScreen
-import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
 
@@ -54,17 +52,7 @@ fun SmartStayNavGraph() {
                     }
                 }
             } else {
-                val hotelListViewModel: HotelListViewModel = hiltViewModel()
-                val hotelUiState by hotelListViewModel.uiState.collectAsState()
-
-                // Simulación e Integración E2E del comportamiento visual según el Rol
-                // Aquí el frontend móvil ya conoce de forma inmutable si el usuario es "chain_admin" o "guest"
-                HotelListScreen(
-                    uiState = hotelUiState,
-                    onRefresh = hotelListViewModel::fetchAllHotels
-                    // Tip listo para producción: pasar comportamiento diferenciado o logout usando el rol
-                    // onSignOut = { iamViewModel.signOut { } }
-                )
+                // Dashboard implementation belongs to the presentation layer of the dashboards feature.
             }
         }
     }
