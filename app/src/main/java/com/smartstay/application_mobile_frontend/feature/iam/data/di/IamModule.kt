@@ -1,4 +1,3 @@
-// feature/iam/data/di/IamModule.kt
 package com.smartstay.application_mobile_frontend.feature.iam.data.di
 
 import com.smartstay.application_mobile_frontend.feature.iam.data.remote.IamApiService
@@ -15,6 +14,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class IamRepositoryModule {
+
     @Binds
     @Singleton
     abstract fun bindIamRepository(impl: IamRepositoryImpl): IamRepository
@@ -23,6 +23,7 @@ abstract class IamRepositoryModule {
 @Module
 @InstallIn(SingletonComponent::class)
 object IamApiModule {
+
     @Provides
     @Singleton
     fun provideIamApiService(retrofit: Retrofit): IamApiService {

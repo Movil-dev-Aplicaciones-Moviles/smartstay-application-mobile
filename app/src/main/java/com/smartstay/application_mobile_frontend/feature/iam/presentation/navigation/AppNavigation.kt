@@ -7,7 +7,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
-import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.dashboards.*
 
 /**
  * Main navigation graph setup.
@@ -31,29 +30,18 @@ fun AppNavigation() {
                 }
             )
         }
-
-        composable(AppRoutes.CHAIN_ADMIN_DASHBOARD) {
-            ChainAdminDashboard()
+/**
+        composable(AppRoutes.SIGN_UP) {
+            SignUpScreen(
+                viewModel = hiltViewModel(),
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo(AppRoutes.SIGN_UP) { inclusive = true }
+                    }
+                }
+            )
         }
 
-        composable(AppRoutes.ADMIN_DASHBOARD) {
-            AdminDashboard()
-        }
-
-        composable(AppRoutes.RECEPTION_DASHBOARD) {
-            ReceptionDashboard()
-        }
-
-        composable(AppRoutes.HOUSEKEEPING_DASHBOARD) {
-            HousekeepingDashboard()
-        }
-
-        composable(AppRoutes.MAINTENANCE_DASHBOARD) {
-            MaintenanceDashboard()
-        }
-
-        composable(AppRoutes.STAFF_DASHBOARD) {
-            StaffDashboard()
-        }
+**/
     }
 }

@@ -29,51 +29,61 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.smartstay.application_mobile_frontend.feature.iam.domain.model.SignInCommand
+import com.smartstay.application_mobile_frontend.feature.iam.domain.model.SignUpCommand
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
 
 /**
- * Sign-in screen composable.
+ * Registration screen composable.
  *
- * Reads UI state from [viewModel] and delegates all business logic to it.
- * Navigation events (post-auth routing) are consumed by [SmartStayNavGraph]
- * via the shared [IamViewModel.events] channel — this screen only needs the
- * explicit [onNavigateToSignUp] callback for the registration flow.
+ * Allows new users to create an account by providing a username and password.
+ * On success the ViewModel emits [AuthEvent.Navigate] to [AppRoutes.SIGN_IN]
+ * (consumed by [SmartStayNavGraph]) — the user must sign in explicitly after
+ * registration, as no session is created at this point.
  *
- * @param viewModel         Shared [IamViewModel] injected at the NavGraph level.
- * @param onNavigateToSignUp Triggered when the user taps "Create account".
+ * Password confirmation is validated client-side before the repository call
+ * to avoid an unnecessary network round-trip for a trivially detectable mismatch.
+ *
+ * @param viewModel          Shared [IamViewModel] injected at the NavGraph level.
+ * @param onNavigateToSignIn Triggered when the user taps "Already have an account".
  */
 @Suppress("SpellCheckingInspection")
 @Composable
-fun SignInScreen(
+fun SignUpScreen(
     viewModel:          IamViewModel,
-    onNavigateToSignUp: () -> Unit
+    onNavigateToSignIn: () -> Unit
 ) {
     val uiState      by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
 
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var username        by remember { mutableStateOf("") }
+    var password        by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    val passwordMismatch = password.isNotBlank()
+            && confirmPassword.isNotBlank()
+            && password != confirmPassword
 
     val canSubmit = !uiState.isLoading
             && username.isNotBlank()
             && password.isNotBlank()
+            && confirmPassword.isNotBlank()
+            && !passwordMismatch
 
     Column(
-        modifier             = Modifier
+        modifier            = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        horizontalAlignment  = Alignment.CenterHorizontally,
-        verticalArrangement  = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
         Text(
-            text  = "SmartStay",
+            text  = "Crear cuenta",
             style = MaterialTheme.typography.headlineLarge
         )
 
         Text(
-            text  = "Inicia sesión para continuar",
+            text  = "Completa los datos para registrarte",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -98,22 +108,41 @@ fun SignInScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value                  = password,
-            onValueChange          = {
+            value                = password,
+            onValueChange        = {
                 password = it
                 if (uiState.errors.isNotEmpty()) viewModel.clearErrors()
             },
-            label                  = { Text("Contraseña") },
-            singleLine             = true,
-            visualTransformation   = PasswordVisualTransformation(),
-            keyboardOptions        = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions        = KeyboardActions(
+            label                = { Text("Contraseña") },
+            singleLine           = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions      = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions      = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
+            modifier             = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value                = confirmPassword,
+            onValueChange        = { confirmPassword = it },
+            label                = { Text("Confirmar contraseña") },
+            singleLine           = true,
+            isError              = passwordMismatch,
+            supportingText       = if (passwordMismatch) {
+                { Text("Las contraseñas no coinciden.") }
+            } else null,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions      = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions      = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    if (canSubmit) viewModel.signIn(SignInCommand(username, password))
+                    if (canSubmit) viewModel.signUp(SignUpCommand(username, password))
                 }
             ),
-            modifier               = Modifier.fillMaxWidth()
+            modifier             = Modifier.fillMaxWidth()
         )
 
         if (uiState.errors.isNotEmpty()) {
@@ -130,7 +159,7 @@ fun SignInScreen(
         Button(
             onClick  = {
                 focusManager.clearFocus()
-                viewModel.signIn(SignInCommand(username, password))
+                viewModel.signUp(SignUpCommand(username, password))
             },
             enabled  = canSubmit,
             modifier = Modifier
@@ -143,14 +172,14 @@ fun SignInScreen(
                     color    = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Iniciar sesión")
+                Text("Crear cuenta")
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = onNavigateToSignUp) {
-            Text("¿No tienes cuenta? Crear cuenta")
+        TextButton(onClick = onNavigateToSignIn) {
+            Text("¿Ya tienes cuenta? Iniciar sesión")
         }
     }
 }
