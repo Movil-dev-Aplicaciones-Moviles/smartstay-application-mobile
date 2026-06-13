@@ -33,27 +33,6 @@ fun SmartStayNavGraph() {
 
     NavHost(navController = navController, startDestination = startDestination) {
 
-        composable("login") {
-            SignInScreen(
-                viewModel = iamViewModel,
-                onNavigateToDashboard = {
-                    navController.navigate("dashboard") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        composable("dashboard") {
-            if (!uiState.isSignedIn) {
-                LaunchedEffect(Unit) {
-                    navController.navigate("login") {
-                        popUpTo("dashboard") { inclusive = true }
-                    }
-                }
-            } else {
                 // Dashboard implementation belongs to the presentation layer of the dashboards feature.
             }
-        }
-    }
 }

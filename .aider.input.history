@@ -1,0 +1,162 @@
+
+# 2026-06-13 10:59:47.224265
++n
+
+# 2026-06-13 11:00:06.490570
++/add app/src/main/java/com/smartstay/application_mobile_frontend
+
+# 2026-06-13 11:00:27.190181
++Analiza el directorio actual completo.
++
++Objetivo:
++Generar un inventario exhaustivo de la estructura del proyecto.
++
++Instrucciones:
++
++1. Recorre recursivamente todas las carpetas y subcarpetas accesibles.
++2. Lista TODOS los archivos encontrados.
++3. No abras ni analices el contenido de los archivos.
++4. No generes resúmenes ni interpretaciones.
++5. No omitas archivos por extensión.
++6. Muestra únicamente la estructura y rutas relativas.
++7. Agrupa la salida por carpetas principales.
++8. Indica el número total de carpetas y archivos encontrados.
++9. Si existen directorios muy grandes, continúa listando todo hasta completar el inventario.
++10. No propongas cambios de código.
++
++Formato esperado:
++
++DIRECTORIO: feature/iam
++├── data/
++│   ├── di/
++│   │   └── IamModule.kt
++│   ├── local/
++│   │   └── SessionManager.kt
++│   └── ...
++├── domain/
++└── presentation/
++
++DIRECTORIO: feature/accommodation
++├── data/
++├── domain/
++└── presentation/
++
++Resumen:
++
++* Carpetas: X
++* Archivos: Y
++
++Devuelve únicamente el árbol completo del proyecto.
++
+
+# 2026-06-13 11:43:26.638132
++n
+
+# 2026-06-13 11:43:51.750736
++/add app/src/main/java/com/smartstay/application_mobile_frontend
+
+# 2026-06-13 11:44:05.527555
++Analiza el directorio actual completo.
++
++Objetivo:
++Generar un inventario exhaustivo de la estructura del proyecto.
++
++Instrucciones:
++
++1. Recorre recursivamente todas las carpetas y subcarpetas accesibles.
++2. Lista TODOS los archivos encontrados.
++3. No abras ni analices el contenido de los archivos.
++4. No generes resúmenes ni interpretaciones.
++5. No omitas archivos por extensión.
++6. Muestra únicamente la estructura y rutas relativas.
++7. Agrupa la salida por carpetas principales.
++8. Indica el número total de carpetas y archivos encontrados.
++9. Si existen directorios muy grandes, continúa listando todo hasta completar el inventario.
++10. No propongas cambios de código.
++
++Formato esperado:
++
++DIRECTORIO: feature/iam
++├── data/
++│   ├── di/
++│   │   └── IamModule.kt
++│   ├── local/
++│   │   └── SessionManager.kt
++│   └── ...
++├── domain/
++└── presentation/
++
++DIRECTORIO: feature/accommodation
++├── data/
++├── domain/
++└── presentation/
++
++Resumen:
++
++* Carpetas: X
++* Archivos: Y
++
++Devuelve únicamente el árbol completo del proyecto.
++
+
+# 2026-06-13 11:44:18.718942
++y
+
+# 2026-06-13 11:45:11.582675
++n
+
+# 2026-06-13 11:45:22.270650
++/clear
+
+# 2026-06-13 11:45:24.663073
++Analiza el directorio actual completo.
++
++Objetivo:
++Generar un inventario exhaustivo de la estructura del proyecto.
++
++Instrucciones:
++
++1. Recorre recursivamente todas las carpetas y subcarpetas accesibles.
++2. Lista TODOS los archivos encontrados.
++3. No abras ni analices el contenido de los archivos.
++4. No generes resúmenes ni interpretaciones.
++5. No omitas archivos por extensión.
++6. Muestra únicamente la estructura y rutas relativas.
++7. Agrupa la salida por carpetas principales.
++8. Indica el número total de carpetas y archivos encontrados.
++9. Si existen directorios muy grandes, continúa listando todo hasta completar el inventario.
++10. No propongas cambios de código.
++
++Formato esperado:
++
++DIRECTORIO: feature/iam
++├── data/
++│   ├── di/
++│   │   └── IamModule.kt
++│   ├── local/
++│   │   └── SessionManager.kt
++│   └── ...
++├── domain/
++└── presentation/
++
++DIRECTORIO: feature/accommodation
++├── data/
++├── domain/
++└── presentation/
++
++Resumen:
++
++* Carpetas: X
++* Archivos: Y
++
++Devuelve únicamente el árbol completo del proyecto.
++
+
+# 2026-06-13 11:46:31.047863
++n
+
+# 2026-06-13 11:46:37.941849
++/add app/src/main/java/com/smartstay/application_mobile_frontend
+
+# 2026-06-13 11:46:51.825006
++Analiza el directorio actual. Quiero que generes un árbol de directorios completo listando TODOS los archivos (no su contenido, solo sus rutas relativas). Devuelve la salida formateada como texto plano, agrupada por carpetas principales.
