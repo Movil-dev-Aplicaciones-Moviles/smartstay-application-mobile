@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.rememberNavController
-import com.smartstay.application_mobile_frontend.core.navigation.SmartStayNavHost
+import com.smartstay.application_mobile_frontend.core.navigation.SmartStayNavGraph
 import com.smartstay.application_mobile_frontend.ui.theme.ApplicationmobilefrontendTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ApplicationmobilefrontendTheme {
                 val navController = rememberNavController()
-                SmartStayNavHost(navController = navController)
+                SmartStayNavGraph(navController = navController)
             }
         }
     }

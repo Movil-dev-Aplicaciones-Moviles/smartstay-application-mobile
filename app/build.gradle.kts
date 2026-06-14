@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.smartstay.application_mobile_frontend"
 
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.smartstay.application_mobile_frontend"
@@ -90,4 +90,10 @@ dependencies {
     // Navigation & Hilt Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.okhttp.logging)
+
+    // Test dependencies
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
