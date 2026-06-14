@@ -105,7 +105,6 @@ fun UserListScreen(
             if (permissions.canCreateUsers) {
                 FloatingActionButton(
                     onClick = {
-                        // TODO: Navegar a CreateUserScreen en tarea 2.8
                         navController.navigate(Routes.USER_LIST)
                     }
                 ) {
