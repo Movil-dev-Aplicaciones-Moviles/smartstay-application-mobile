@@ -1,7 +1,6 @@
 package com.smartstay.application_mobile_frontend.core.di
 
 import com.smartstay.application_mobile_frontend.core.network.AuthInterceptor
-import com.smartstay.application_mobile_frontend.feature.iam.data.remote.IamApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,9 +50,9 @@ object NetworkModule {
             .build()
     }
 
-     @Provides
-     @Singleton
-     fun provideIamApiService(retrofit: Retrofit): IamApiService {
-         return retrofit.create(IamApiService::class.java)
-     }
+    // @Provides
+    // @Singleton
+    // fun provideIamApiService(retrofit: Retrofit): IamApiService {
+    //     return retrofit.create(IamApiService::class.java)
+    // }
 }

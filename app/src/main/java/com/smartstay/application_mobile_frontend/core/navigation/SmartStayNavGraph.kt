@@ -19,8 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.smartstay.application_mobile_frontend.R
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -146,15 +148,13 @@ fun SmartStayNavGraph(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Dashboard",
+                        text = stringResource(R.string.nav_dashboard_title),
                         style = MaterialTheme.typography.headlineMedium
                     )
 
                     Button(
                         onClick = {
-                            val userId = remember {
-                                runBlocking { tokenManager.getUserId() }
-                            }
+                            val userId = runBlocking { tokenManager.getUserId() }
                             if (userId != null) {
                                 navController.navigate(Routes.userDetail(userId))
                             }
@@ -163,14 +163,14 @@ fun SmartStayNavGraph(navController: NavHostController) {
                     ) {
                         Icon(Icons.Filled.Person, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Mi Perfil")
+                        Text(stringResource(R.string.nav_my_profile_button))
                     }
 
                     Button(
                         onClick = { navController.navigate(Routes.USER_LIST) },
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Text(text = "Lista de Usuarios")
+                        Text(text = stringResource(R.string.nav_user_list_button))
                     }
 
                     Button(
@@ -179,14 +179,14 @@ fun SmartStayNavGraph(navController: NavHostController) {
                         },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Text(text = "Detalle Usuario (ID=1)")
+                        Text(text = stringResource(R.string.nav_user_detail_button))
                     }
 
                     Button(
                         onClick = { navController.navigate(Routes.CHANGE_PASSWORD) },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Text(text = "Cambiar Contraseña")
+                        Text(text = stringResource(R.string.nav_change_password_button))
                     }
 
                     Button(
@@ -198,7 +198,7 @@ fun SmartStayNavGraph(navController: NavHostController) {
                         },
                         modifier = Modifier.padding(top = 24.dp)
                     ) {
-                        Text(text = "Cerrar Sesión")
+                        Text(text = stringResource(R.string.nav_logout_button))
                     }
                 }
             }
@@ -215,7 +215,7 @@ fun SmartStayNavGraph(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "User List",
+                        text = stringResource(R.string.nav_user_list_placeholder),
                         style = MaterialTheme.typography.headlineMedium
                     )
 
@@ -225,14 +225,14 @@ fun SmartStayNavGraph(navController: NavHostController) {
                         },
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Text(text = "Ver Usuario 1")
+                        Text(text = stringResource(R.string.nav_view_user_button))
                     }
 
                     Button(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Text(text = "Volver")
+                        Text(text = stringResource(R.string.nav_back_button))
                     }
                 }
             }
@@ -269,7 +269,7 @@ fun SmartStayNavGraph(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Edit User",
+                        text = stringResource(R.string.nav_edit_user_placeholder),
                         style = MaterialTheme.typography.headlineMedium
                     )
                     Text(
@@ -282,7 +282,7 @@ fun SmartStayNavGraph(navController: NavHostController) {
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Text(text = "Volver")
+                        Text(text = stringResource(R.string.nav_back_button))
                     }
                 }
             }
