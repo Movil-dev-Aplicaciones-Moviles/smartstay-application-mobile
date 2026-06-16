@@ -21,6 +21,7 @@ import com.smartstay.application_mobile_frontend.R
 import com.smartstay.application_mobile_frontend.core.validation.InputValidator
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.createuser.CreateUserUiState
 import com.smartstay.application_mobile_frontend.feature.iam.data.dto.CreateUserRequest
+import com.smartstay.application_mobile_frontend.feature.iam.domain.model.RoleHierarchy
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +131,9 @@ fun CreateUserScreen(
 
                     // ---- NUEVO: Selector desplegable de Roles ----
                     var expandedByRole by remember { mutableStateOf(false) }
-                    val rolesDisponibles = listOf("staff", "reception", "housekeeping", "maintenance")
+                    val rolesDisponibles = remember {
+                        RoleHierarchy.getAssignableRoles(actorRole = "chain_admin", targetCurrentRole = "")
+                    }
 
                     ExposedDropdownMenuBox(
                         expanded = expandedByRole,

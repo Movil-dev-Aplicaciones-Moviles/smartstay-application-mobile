@@ -51,6 +51,7 @@ import androidx.navigation.NavHostController
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.User
 import androidx.compose.material.icons.filled.Badge
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 /**
  * Pantalla de lista de usuarios de SmartStay.
@@ -70,6 +71,11 @@ fun UserListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val permissions = viewModel.userPermissions
     val snackbarHostState = remember { SnackbarHostState() }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        viewModel.loadUsers()
+    }
 
     // Mostrar Snackbar en caso de error
     LaunchedEffect(uiState) {
