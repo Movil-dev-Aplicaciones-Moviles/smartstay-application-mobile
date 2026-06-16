@@ -49,7 +49,7 @@ data class UserPermissions(val actorRole: String) {
      * [Recepcionista], [Guest] y [Host] no tienen capacidad de gestión.
      */
     val canManageUsers: Boolean
-        get() = actorRole == "chain_admin" || actorRole == "hotel_admin"
+        get() = actorRole == "chain_admin" || actorRole == "admin"
 
     /**
      * Indica si el actor puede ver la lista completa de usuarios.
@@ -58,7 +58,7 @@ data class UserPermissions(val actorRole: String) {
      * [Recepcionista], [Guest] y [Host] solo pueden ver su propio perfil.
      */
     val canViewAllUsers: Boolean
-        get() = actorRole == "chain_admin" || actorRole == "hotel_admin"
+        get() = actorRole == "chain_admin" || actorRole == "admin"
 
     // ──────────────────────────────────────────────
     // Permisos condicionados al rol del objetivo
