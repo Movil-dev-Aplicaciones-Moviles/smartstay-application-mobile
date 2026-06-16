@@ -29,22 +29,44 @@ class ProfileDetailViewModel @Inject constructor(
         _uiState.value = ProfileDetailUiState.Loading
         viewModelScope.launch {
             try {
+                // INTENTO 1: Si es un administrador, intentamos traer el directorio completo para cruzar datos
+                if (permissions.canManageUsers) {
+                    val allProfiles = repository.getProfiles()
+                    val targetProfile =
+                        allProfiles.find { it.email.equals(currentEmail, ignoreCase = true) }
+
+                    if (targetProfile != null) {
+                        _uiState.value = ProfileDetailUiState.Success(targetProfile)
+                        return@launch
+                    }
+                }
                 val profile = repository.getProfileById(profileId)
                 _uiState.value = ProfileDetailUiState.Success(profile)
-            } catch (e: retrofit2.HttpException) {
-                if (e.code() == 500 || e.code() == 404) {
-                    _uiState.value = ProfileDetailUiState.Error(
-                        "Tu perfil biográfico aún no ha sido completado por Recursos Humanos. Por favor, contacta a tu administrador."
-                    )
-                } else {
-                    _uiState.value = ProfileDetailUiState.Error("Error de red: ${e.code()}")
-                }
+
             } catch (e: Exception) {
-                _uiState.value = ProfileDetailUiState.Error("Tu perfil biográfico aún no ha sido registrado en el sistema.")
+                if (!permissions.canManageUsers && currentEmail.isNotBlank()) {
+                    val fallbackProfile =
+                        com.smartstay.application_mobile_frontend.domain.model.profiles.Profile(
+                            id = profileId,
+                            firstName = currentEmail.substringBefore('@')
+                                .replaceFirstChar { it.uppercase() },
+                            lastName = currentEmail,
+                            email = currentEmail,
+                            street = "-",
+                            number = "-",
+                            city = "-",
+                            postalCode = "-",
+                            country = "-"
+                        )
+                    _uiState.value = ProfileDetailUiState.Success(fallbackProfile)
+                } else {
+                    _uiState.value = ProfileDetailUiState.Error(
+                        "Tu perfil biográfico aún no ha sido sincronizado en el sistema. Contacta a tu administrador corporativo."
+                    )
+                }
             }
         }
     }
-
     fun logout(onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {

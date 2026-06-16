@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack // ─── Ícono actualizado importado aquí
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,13 +21,13 @@ import com.smartstay.application_mobile_frontend.core.navigation.Routes
 fun ProfileDetailScreen(
     navController: NavHostController,
     profileId: Int,
-    viewModel: ProfileDetailViewModel = hiltViewModel()
+    @Suppress("DEPRECATION") viewModel: ProfileDetailViewModel = hiltViewModel() // ─── Warning de Hilt suprimido
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val permissions = viewModel.permissions
     val currentEmail = viewModel.currentEmail
 
-    // Disparamos la carga al entrar a la cancha [cite: 745]
+    // Disparamos la carga al entrar a la cancha
     LaunchedEffect(profileId) {
         viewModel.loadProfile(profileId)
     }
@@ -40,11 +40,11 @@ fun ProfileDetailScreen(
     // ─── OPTIMIZACIÓN REACTIVA DE PERMISOS ───
     val loadedProfile = (uiState as? ProfileDetailUiState.Success)?.profile
 
-    // Condición reactiva: Evaluamos si el perfil cargado coincide con nuestra sesión [cite: 746]
+    // Condición reactiva: Evaluamos si el perfil cargado coincide con nuestra sesión
     val isOwnProfile = remember(loadedProfile) { loadedProfile?.email == currentEmail }
     val isReadOnly = remember(loadedProfile) { !isOwnProfile }
 
-    // Sincronizamos las cajas de texto cuando la API responda exitosamente [cite: 747]
+    // Sincronizamos las cajas de texto cuando la API responda exitosamente
     LaunchedEffect(loadedProfile) {
         loadedProfile?.let {
             firstName = it.firstName
@@ -58,17 +58,18 @@ fun ProfileDetailScreen(
             TopAppBar(
                 title = { Text(if (isReadOnly) "Ficha del Empleado" else "Mi Perfil", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
-                    if (permissions.canManageUsers) { // [cite: 749]
+                    if (permissions.canManageUsers) {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                            // ─── Ícono corregido a la versión AutoMirrored
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                         }
                     }
                 },
                 actions = {
-                    if (!permissions.canManageUsers || isOwnProfile) { // [cite: 750]
+                    if (!permissions.canManageUsers || isOwnProfile) {
                         IconButton(onClick = {
                             viewModel.logout(onSuccess = {
-                                navController.navigate(Routes.LOGIN) { // [cite: 751]
+                                navController.navigate(Routes.LOGIN) {
                                     popUpTo(0) { inclusive = true }
                                 }
                             })
@@ -126,7 +127,7 @@ fun ProfileDetailScreen(
                             }
                         }
 
-                        // Notificación visual de modo auditoría [cite: 758]
+                        // Notificación visual de modo auditoría
                         if (isReadOnly) {
                             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
                                 Text(
@@ -165,10 +166,11 @@ fun ProfileDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // El botón de Guardar solo aparece si el perfil es tuyo
                         if (isOwnProfile) {
                             Button(
                                 onClick = {
-                                    // Aquí llamarás al método PUT para actualizar tus datos personales en el futuro [cite: 771]
+                                    // Aquí llamarás al método PUT para actualizar tus datos personales en el futuro
                                 },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = MaterialTheme.shapes.medium
