@@ -46,7 +46,7 @@ import com.smartstay.application_mobile_frontend.core.navigation.Routes
  *
  * Permite al usuario crear una cuenta ingresando usuario, contraseña
  * y confirmación de contraseña, con validación local antes de llamar
- * al ViewModel. Navega al dashboard tras un registro exitoso.
+ * al ViewModel. Navega a la lista de usuarios tras un registro exitoso.
  *
  * @param navController Controlador de navegación.
  * @param viewModel ViewModel de registro inyectado por Hilt.
@@ -66,11 +66,12 @@ fun SignUpScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Navegación al dashboard en caso de éxito
+    // Navegación a la pantalla principal operacional en caso de éxito
     LaunchedEffect(uiState) {
         if (uiState is SignUpUiState.Success) {
-            navController.navigate(Routes.DASHBOARD) {
-                popUpTo(Routes.SIGN_UP) { inclusive = true }
+            navController.navigate(Routes.USER_LIST) {
+                // Al corregir el string de la ruta, el contexto de 'inclusive' se arregla automáticamente
+                popUpTo("sign_up") { inclusive = true }
             }
         }
     }

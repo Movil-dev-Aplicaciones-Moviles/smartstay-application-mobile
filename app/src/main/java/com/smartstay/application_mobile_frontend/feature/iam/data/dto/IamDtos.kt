@@ -90,16 +90,14 @@ data class CreateUserRequest(
  * Todos los campos son opcionales; el backend solo actualiza los campos enviados.
  */
 data class UpdateUserRequest(
-    val username: String? = null,
-    val role: String? = null,
-    val hotelId: Int? = null,
-    val chainId: Int? = null,
-    val status: String? = null
+    val newUsername: String? = null,
+    val newPassword: String? = null,
+    val newHotelId: Int? = null,
+    val newChainId: Int? = null
 )
-
 /**
  * DTO para asignar un rol a un usuario. Se envía a: POST /api/v1/users/{id}/assign-role
  */
 data class AssignRoleRequest(
-    val role: String
+    val newRole: String
 )

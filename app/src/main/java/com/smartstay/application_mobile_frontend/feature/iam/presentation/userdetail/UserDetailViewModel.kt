@@ -121,7 +121,7 @@ class UserDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val request = AssignRoleRequest(role)
+                val request = AssignRoleRequest(newRole = role)
                 iamRepository.assignRole(userId, request)
                 loadUser(userId)
             } catch (e: HttpException) {
@@ -136,6 +136,20 @@ class UserDetailViewModel @Inject constructor(
                 _uiState.value = UserDetailUiState.Error(
                     message = e.message ?: "Error desconocido"
                 )
+            }
+        }
+    }
+
+
+
+    fun activateUser(userId: Int) {
+        _uiState.value = UserDetailUiState.Loading
+        viewModelScope.launch {
+            try {
+                iamRepository.activateUser(userId)
+                loadUser(userId)
+            } catch (e: Exception) {
+                _uiState.value = UserDetailUiState.Error(e.message ?: "Error al activar el usuario")
             }
         }
     }

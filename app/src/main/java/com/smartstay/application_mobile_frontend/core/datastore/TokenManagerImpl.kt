@@ -24,6 +24,8 @@ class TokenManagerImpl @Inject constructor(
         val USER_ID = intPreferencesKey("user_id")
         val USERNAME = stringPreferencesKey("username")
         val ROLE = stringPreferencesKey("role")
+        val HOTEL_ID = intPreferencesKey("hotel_id")
+        val CHAIN_ID = intPreferencesKey("chain_id")
     }
 
     /**
@@ -42,18 +44,26 @@ class TokenManagerImpl @Inject constructor(
      * @param userId Identificador único del usuario.
      * @param username Nombre de usuario o correo electrónico.
      * @param role Rol del usuario (ej: GUEST, HOST, ADMIN).
+     * @param hotelId ID del hotel asociado.
+     * @param chainId ID de la cadena asociada.
      */
     override suspend fun saveAuthData(
         token: String,
         userId: Int,
         username: String,
-        role: String
+        role: String,
+        hotelId: Int?,
+        chainId: Int?
     ) {
         dataStore.edit { preferences ->
             preferences[TOKEN] = token
             preferences[USER_ID] = userId
             preferences[USERNAME] = username
             preferences[ROLE] = role
+
+            // Si vienen nulos, removemos la clave vieja para limpiar la sesión previa
+            if (hotelId != null) preferences[HOTEL_ID] = hotelId else preferences.remove(HOTEL_ID)
+            if (chainId != null) preferences[CHAIN_ID] = chainId else preferences.remove(CHAIN_ID)
         }
     }
 
@@ -93,6 +103,24 @@ class TokenManagerImpl @Inject constructor(
     override suspend fun getRole(): String? {
         return dataStore.data.map { preferences ->
             preferences[ROLE]
+        }.firstOrNull()
+    }
+
+    /**
+     * Recupera el ID del hotel almacenado.
+     */
+    override suspend fun getHotelId(): Int? {
+        return dataStore.data.map { preferences ->
+            preferences[HOTEL_ID]
+        }.firstOrNull()
+    }
+
+    /**
+     * Recupera el ID de la cadena almacenado.
+     */
+    override suspend fun getChainId(): Int? {
+        return dataStore.data.map { preferences ->
+            preferences[CHAIN_ID]
         }.firstOrNull()
     }
 }

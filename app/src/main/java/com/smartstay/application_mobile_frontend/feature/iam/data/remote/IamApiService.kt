@@ -72,7 +72,7 @@ interface IamApiService {
      * @return Usuario creado con su ID asignado.
      */
     @POST("users")
-    suspend fun createUser(@Body request: CreateUserRequest): UserResponse
+    suspend fun createUser(@Body request: CreateUserRequest): MessageResponse
 
     /**
      * Actualiza parcialmente un usuario existente.
@@ -85,7 +85,7 @@ interface IamApiService {
     suspend fun updateUser(
         @Path("id") userId: Int,
         @Body request: UpdateUserRequest
-    ): UserResponse
+    ): MessageResponse
 
     /**
      * Desactiva un usuario (no lo elimina físicamente).
@@ -108,4 +108,13 @@ interface IamApiService {
         @Path("id") userId: Int,
         @Body request: AssignRoleRequest
     ): MessageResponse
+
+    /**
+     * Reactiva un usuario previamente desactivado.
+     *
+     * @param userId ID del usuario a reactivar.
+     * @return Mensaje de confirmación de la reactivación.
+     */
+    @POST("users/{id}/activate")
+    suspend fun activateUser(@Path("id") userId: Int): MessageResponse
 }

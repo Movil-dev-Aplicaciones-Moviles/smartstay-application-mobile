@@ -16,10 +16,12 @@ object RoleHierarchy {
      */
     val hierarchy: Map<String, Int> = mapOf(
         "chain_admin" to 3,
-        "hotel_admin" to 2,
-        "receptionist" to 1,
-        "Guest" to 0,
-        "Host" to 0
+        "admin" to 2,
+        "reception" to 1,
+        "staff" to 1,
+        "housekeeping" to 1,
+        "maintenance" to 1,
+        "guest" to 0
     )
 
     /**

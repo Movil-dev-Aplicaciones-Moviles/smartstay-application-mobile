@@ -61,6 +61,7 @@ import com.smartstay.application_mobile_frontend.core.navigation.Routes
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.User
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.assignrole.AssignRoleDialog
+import androidx.compose.material.icons.filled.Check
 
 /**
  * Pantalla de detalle de usuario de SmartStay.
@@ -211,7 +212,8 @@ fun UserDetailScreen(
                         permissions = permissions,
                         onEdit = { navController.navigate(Routes.editUser(user.id)) },
                         onAssignRole = { showAssignRoleDialog = true },
-                        onDeactivate = { showDeactivateDialog = true }
+                        onDeactivate = { showDeactivateDialog = true },
+                        onActivate = { viewModel.activateUser(user.id) }
                     )
                 }
             }
@@ -237,7 +239,8 @@ private fun UserDetailContent(
     permissions: UserPermissions,
     onEdit: () -> Unit,
     onAssignRole: () -> Unit,
-    onDeactivate: () -> Unit
+    onDeactivate: () -> Unit,
+    onActivate: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -366,29 +369,45 @@ private fun UserDetailContent(
         }
 
         if (permissions.canDeactivateUser(targetRole = user.role)) {
-            Button(
-                onClick = onDeactivate,
-                enabled = user.status.lowercase() != "inactive",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError,
-                    disabledContainerColor = MaterialTheme.colorScheme.errorContainer,
-                    disabledContentColor = MaterialTheme.colorScheme.onErrorContainer
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Block,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    if (user.status.lowercase() == "inactive") stringResource(R.string.userdetail_already_inactive)
-                    else stringResource(R.string.userdetail_deactivate_button)
-                )
+            if (user.status.lowercase() == "inactive") {
+                Button(
+                    onClick = onActivate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50), // Verde esmeralda operacional
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Activar Usuario")
+                }
+            } else {
+                // El usuario está activo: mostramos el botón clásico de DESACTIVAR (Rojo)
+                Button(
+                    onClick = onDeactivate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Block,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.userdetail_deactivate_button))
+                }
             }
         }
     }

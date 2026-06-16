@@ -39,7 +39,9 @@ class IamRepositoryImpl @Inject constructor(
             token = authenticatedUser.token,
             userId = authenticatedUser.user.id,
             username = authenticatedUser.user.username,
-            role = authenticatedUser.user.role
+            role = authenticatedUser.user.role,
+            hotelId = authenticatedUser.user.hotelId,
+            chainId = authenticatedUser.user.chainId
         )
 
         return authenticatedUser
@@ -56,7 +58,9 @@ class IamRepositoryImpl @Inject constructor(
             token = authenticatedUser.token,
             userId = authenticatedUser.user.id,
             username = authenticatedUser.user.username,
-            role = authenticatedUser.user.role
+            role = authenticatedUser.user.role,
+            hotelId = authenticatedUser.user.hotelId,
+            chainId = authenticatedUser.user.chainId
         )
 
         return authenticatedUser
@@ -89,17 +93,15 @@ class IamRepositoryImpl @Inject constructor(
     /**
      * Crea un nuevo usuario y retorna el modelo de dominio resultante.
      */
-    override suspend fun createUser(request: CreateUserRequest): User {
-        val response = api.createUser(request)
-        return response.toDomain()
+    override suspend fun createUser(request: CreateUserRequest) {
+        api.createUser(request)
     }
 
     /**
      * Actualiza parcialmente un usuario y retorna el modelo de dominio actualizado.
      */
-    override suspend fun updateUser(userId: Int, request: UpdateUserRequest): User {
-        val response = api.updateUser(userId, request)
-        return response.toDomain()
+    override suspend fun updateUser(userId: Int, request: UpdateUserRequest) {
+        api.updateUser(userId, request)
     }
 
     /**
@@ -114,5 +116,9 @@ class IamRepositoryImpl @Inject constructor(
      */
     override suspend fun assignRole(userId: Int, request: AssignRoleRequest) {
         api.assignRole(userId, request)
+    }
+
+    override suspend fun activateUser(userId: Int) {
+        api.activateUser(userId)
     }
 }

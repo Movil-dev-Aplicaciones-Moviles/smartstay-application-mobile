@@ -22,13 +22,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,12 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
+import com.smartstay.application_mobile_frontend.core.validation.InputValidator
+import kotlinx.coroutines.launch
 
 /**
  * Pantalla de inicio de sesión de SmartStay.
+ * Uso exclusivo para personal operativo y administrativo del hotel/cadena.
  *
  * Permite al usuario ingresar sus credenciales, validar los campos
- * localmente y navegar al dashboard tras un login exitoso.
+ * localmente y navegar al listado de usuarios tras un login exitoso.
  *
  * @param navController Controlador de navegación.
  * @param viewModel ViewModel de login inyectado por Hilt.
@@ -56,6 +59,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -63,16 +67,15 @@ fun LoginScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Navegación al dashboard en caso de éxito
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
-            navController.navigate(Routes.DASHBOARD) {
+            navController.navigate(Routes.USER_LIST) {
                 popUpTo(Routes.LOGIN) { inclusive = true }
             }
         }
     }
 
-    // Mostrar Snackbar en caso de error
+    // Mostrar Snackbar en caso de error retornado por la API
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Error) {
             val errorMessage = (uiState as LoginUiState.Error).message
@@ -91,7 +94,7 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título
+            // Título de la Aplicación Administrativa
             Text(
                 text = stringResource(R.string.login_smartstay_title),
                 style = MaterialTheme.typography.headlineMedium
@@ -99,7 +102,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo de usuario
+            // Campo de usuario (Email o identificador alfanumérico)
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -111,12 +114,13 @@ fun LoginScreen(
                     )
                 },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState !is LoginUiState.Loading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de contraseña
+            // Campo de contraseña con toggle de visibilidad
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -140,18 +144,34 @@ fun LoginScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None
                 else PasswordVisualTransformation(),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState !is LoginUiState.Loading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón Ingresar
+            // Botón Ingresar con validaciones locales robustas
             Button(
                 onClick = {
-                    if (username.isBlank() || password.isBlank()) {
-                        // Validación local: campos vacíos
-                    } else {
-                        viewModel.signIn(username, password)
+                    // 1. Validaciones de presencia e integridad con el InputValidator del core
+                    val usernameError = InputValidator.validateUsername(username)
+                    val passwordError = InputValidator.validatePassword(password)
+
+                    when {
+                        usernameError != null -> {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(usernameError)
+                            }
+                        }
+                        passwordError != null -> {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(passwordError)
+                            }
+                        }
+                        else -> {
+                            // Si pasa las reglas locales, dispara la petición de red
+                            viewModel.signIn(username, password)
+                        }
                     }
                 },
                 enabled = uiState !is LoginUiState.Loading,
@@ -168,15 +188,6 @@ fun LoginScreen(
                 } else {
                     Text(stringResource(R.string.login_sign_in_button))
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Enlace a registro
-            TextButton(
-                onClick = { navController.navigate(Routes.SIGN_UP) }
-            ) {
-                Text(stringResource(R.string.login_sign_up_link))
             }
         }
     }

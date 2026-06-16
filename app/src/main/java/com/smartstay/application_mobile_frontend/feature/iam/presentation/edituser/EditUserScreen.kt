@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.smartstay.application_mobile_frontend.R
@@ -53,12 +54,8 @@ import kotlinx.coroutines.delay
 /**
  * Pantalla de edición de usuario de SmartStay.
  *
- * Permite modificar los campos [username], [role], [status], [hotelId] y [chainId]
- * de un usuario existente mediante una actualización parcial (PUT).
- *
- * @param navController Controlador de navegación.
- * @param userId ID del usuario a editar.
- * @param viewModel ViewModel de edición de usuario inyectado por Hilt.
+ * Permite modificar los campos editables de un usuario existente
+ * mediante una actualización parcial (PUT).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +67,8 @@ fun EditUserScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val successMessage = stringResource(R.string.edituser_success)
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var usernameError by remember { mutableStateOf<String?>(null) }
 
     // Cargar usuario al entrar
     LaunchedEffect(userId) {
@@ -149,7 +148,7 @@ fun EditUserScreen(
                 }
 
                 is EditUserUiState.Error -> {
-                    // El error se muestra via Snackbar; se deja el contenido previo si había algo
+                    // El error se muestra via Snackbar
                 }
 
                 is EditUserUiState.Saving,
@@ -163,17 +162,21 @@ fun EditUserScreen(
                             .verticalScroll(rememberScrollState())
                             .padding(16.dp)
                     ) {
-                        // Username
+                        // Username (Editable)
                         OutlinedTextField(
                             value = username,
-                            onValueChange = { username = it },
-                            label = { Text(stringResource(R.string.edituser_username_label)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null
-                                )
+                            onValueChange = {
+                                username = it
+                                usernameError = when {
+                                    it.isBlank() -> "El nombre de usuario no puede estar vacío"
+                                    it.length < 3 -> "Debe tener al menos 3 caracteres"
+                                    else -> null
+                                }
                             },
+                            label = { Text(stringResource(R.string.edituser_username_label)) },
+                            leadingIcon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
+                            isError = usernameError != null,
+                            supportingText = { usernameError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isSaving
@@ -181,10 +184,10 @@ fun EditUserScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Role
+                        // Role (Solo lectura, se cambia en el detalle con AssignRole)
                         OutlinedTextField(
                             value = role,
-                            onValueChange = { role = it },
+                            onValueChange = { /* No-op */ },
                             label = { Text(stringResource(R.string.edituser_role_label)) },
                             leadingIcon = {
                                 Icon(
@@ -194,10 +197,11 @@ fun EditUserScreen(
                             },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            enabled = !isSaving
+                            readOnly = true,
+                            enabled = false
                         )
                         Text(
-                            text = stringResource(R.string.edituser_role_hint),
+                            text = "Para cambiar el rol, use la opción 'Asignar Rol' en el detalle del usuario.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 4.dp, top = 2.dp)
@@ -205,10 +209,10 @@ fun EditUserScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Status
+                        // Status (Solo lectura, se cambia con Desactivar/Activar)
                         OutlinedTextField(
                             value = status,
-                            onValueChange = { status = it },
+                            onValueChange = { /* No-op */ },
                             label = { Text(stringResource(R.string.edituser_status_label)) },
                             leadingIcon = {
                                 Icon(
@@ -218,18 +222,13 @@ fun EditUserScreen(
                             },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            enabled = !isSaving
-                        )
-                        Text(
-                            text = stringResource(R.string.edituser_status_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                            readOnly = true,
+                            enabled = false
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Hotel ID
+                        // Hotel ID (Editable)
                         OutlinedTextField(
                             value = hotelIdText,
                             onValueChange = { hotelIdText = it },
@@ -248,7 +247,7 @@ fun EditUserScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Chain ID
+                        // Chain ID (Editable)
                         OutlinedTextField(
                             value = chainIdText,
                             onValueChange = { chainIdText = it },
@@ -267,22 +266,19 @@ fun EditUserScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Botón guardar
                         Button(
                             onClick = {
+                                keyboardController?.hide()
                                 val request = UpdateUserRequest(
-                                    username = username.ifBlank { null },
-                                    role = role.ifBlank { null },
-                                    status = status.ifBlank { null },
-                                    hotelId = hotelIdText.toIntOrNull(),
-                                    chainId = chainIdText.toIntOrNull()
+                                    newUsername = username.ifBlank { null },
+                                    newPassword = null,
+                                    newHotelId = hotelIdText.toIntOrNull(),
+                                    newChainId = chainIdText.toIntOrNull()
                                 )
                                 viewModel.updateUser(userId, request)
                             },
-                            enabled = !isSaving && username.isNotBlank(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
+                            enabled = !isSaving && username.isNotBlank() && usernameError == null,
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
                         ) {
                             if (isSaving) {
                                 CircularProgressIndicator(

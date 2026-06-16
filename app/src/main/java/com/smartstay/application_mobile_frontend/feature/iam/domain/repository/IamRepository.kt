@@ -61,7 +61,7 @@ interface IamRepository {
      * @param request Datos del nuevo usuario.
      * @return Usuario creado con su ID asignado.
      */
-    suspend fun createUser(request: CreateUserRequest): User
+    suspend fun createUser(request: CreateUserRequest)
 
     /**
      * Actualiza parcialmente un usuario existente.
@@ -70,7 +70,7 @@ interface IamRepository {
      * @param request Campos a modificar. Solo los no nulos se aplican.
      * @return Usuario con los datos actualizados.
      */
-    suspend fun updateUser(userId: Int, request: UpdateUserRequest): User
+    suspend fun updateUser(userId: Int, request: UpdateUserRequest)
 
     /**
      * Desactiva un usuario (borrado lógico, no físico).
@@ -86,4 +86,6 @@ interface IamRepository {
      * @param request Rol a asignar.
      */
     suspend fun assignRole(userId: Int, request: AssignRoleRequest)
+
+    suspend fun activateUser(userId: Int)
 }

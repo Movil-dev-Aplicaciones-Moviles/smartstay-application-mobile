@@ -50,7 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.User
-import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
+import androidx.compose.material.icons.filled.Badge
 
 /**
  * Pantalla de lista de usuarios de SmartStay.
@@ -89,6 +89,14 @@ fun UserListScreen(
                     )
                 },
                 actions = {
+                    // NUEVO: Botón para navegar a la lista de perfiles
+                    IconButton(onClick = { navController.navigate(Routes.PROFILE_LIST) }) {
+                        Icon(
+                            imageVector = Icons.Default.Badge,
+                            contentDescription = "Ver Perfiles Biográficos"
+                        )
+                    }
+                    // Botón de refresco existente
                     IconButton(onClick = { viewModel.loadUsers() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
@@ -105,7 +113,7 @@ fun UserListScreen(
             if (permissions.canCreateUsers) {
                 FloatingActionButton(
                     onClick = {
-                        navController.navigate(Routes.USER_LIST)
+                        navController.navigate(Routes.CREATE_USER)
                     }
                 ) {
                     Icon(
