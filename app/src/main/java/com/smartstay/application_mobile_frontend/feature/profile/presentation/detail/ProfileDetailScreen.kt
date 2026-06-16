@@ -4,14 +4,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.smartstay.application_mobile_frontend.core.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,7 +27,7 @@ fun ProfileDetailScreen(
     val permissions = viewModel.permissions
     val currentEmail = viewModel.currentEmail
 
-    // Disparamos la carga al entrar a la cancha
+    // Disparamos la carga al entrar a la cancha [cite: 745]
     LaunchedEffect(profileId) {
         viewModel.loadProfile(profileId)
     }
@@ -33,38 +36,52 @@ fun ProfileDetailScreen(
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
 
     // ─── OPTIMIZACIÓN REACTIVA DE PERMISOS ───
-    // Extraemos el perfil de forma segura garantizando que el cálculo sea dinámico en cada ciclo
     val loadedProfile = (uiState as? ProfileDetailUiState.Success)?.profile
 
-    // Condición reactiva: Evaluamos si el perfil cargado coincide con nuestra sesión
+    // Condición reactiva: Evaluamos si el perfil cargado coincide con nuestra sesión [cite: 746]
     val isOwnProfile = remember(loadedProfile) { loadedProfile?.email == currentEmail }
     val isReadOnly = remember(loadedProfile) { !isOwnProfile }
 
-    // Sincronizamos las cajas de texto cuando la API responda exitosamente
+    // Sincronizamos las cajas de texto cuando la API responda exitosamente [cite: 747]
     LaunchedEffect(loadedProfile) {
         loadedProfile?.let {
             firstName = it.firstName
             lastName = it.lastName
             email = it.email
-            city = it.city
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isOwnProfile) "Mi Perfil" else "Ficha del Empleado") },
+                title = { Text(if (isReadOnly) "Ficha del Empleado" else "Mi Perfil", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
-                    // Si el administrador está auditando, puede volver a la lista de usuarios.
-                    if (permissions.canManageUsers) {
+                    if (permissions.canManageUsers) { // [cite: 749]
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                         }
                     }
-                }
+                },
+                actions = {
+                    if (!permissions.canManageUsers || isOwnProfile) { // [cite: 750]
+                        IconButton(onClick = {
+                            viewModel.logout(onSuccess = {
+                                navController.navigate(Routes.LOGIN) { // [cite: 751]
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            })
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Cerrar Sesión",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }
     ) { padding ->
@@ -78,26 +95,62 @@ fun ProfileDetailScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        // Notificación visual de modo auditoría
+                        // Banner Informativo: Identificador de Cuenta Ligado de forma natural y visual
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Cuenta de Acceso",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                    Text(
+                                        text = email,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        // Notificación visual de modo auditoría [cite: 758]
                         if (isReadOnly) {
                             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
                                 Text(
-                                    text = "Modo Auditoría: Estás viendo la información de otro empleado.",
+                                    text = "Modo Auditoría: Estás viendo la información biográfica de otro miembro del equipo.",
                                     modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
 
-                        // Formulario de Datos
+                        Text(
+                            text = "Información de Identidad",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        // Formulario de Datos Simplificado al Máximo
                         OutlinedTextField(
                             value = firstName,
                             onValueChange = { firstName = it },
                             label = { Text("Nombre") },
-                            readOnly = isReadOnly, // Bloqueo dinámico recalculado por el remember
+                            readOnly = isReadOnly,
+                            singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -106,36 +159,21 @@ fun ProfileDetailScreen(
                             onValueChange = { lastName = it },
                             label = { Text("Apellidos") },
                             readOnly = isReadOnly,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = { Text("Correo Electrónico") },
-                            readOnly = true, // El correo JAMÁS se edita porque es la llave de negocio
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        OutlinedTextField(
-                            value = city,
-                            onValueChange = { city = it },
-                            label = { Text("Ciudad de residencia") },
-                            readOnly = isReadOnly,
+                            singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // El botón de Guardar solo aparece si el perfil es tuyo
                         if (isOwnProfile) {
                             Button(
                                 onClick = {
-                                    // Aquí llamarás al método PUT para actualizar tus datos personales
+                                    // Aquí llamarás al método PUT para actualizar tus datos personales en el futuro [cite: 771]
                                 },
-                                modifier = Modifier.fillMaxWidth().height(50.dp)
+                                modifier = Modifier.fillMaxWidth().height(52.dp),
+                                shape = MaterialTheme.shapes.medium
                             ) {
-                                Text("Guardar Cambios Personales")
+                                Text("Guardar Cambios Personales", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

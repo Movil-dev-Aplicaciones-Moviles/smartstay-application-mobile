@@ -42,6 +42,7 @@ class UserListViewModel @Inject constructor(
 ) : ViewModel() {
 
     val userPermissions: UserPermissions
+    val currentUserId: Int = runBlocking { tokenManager.getUserId() } ?: -1
 
     private val _uiState = MutableStateFlow<UserListUiState>(UserListUiState.Idle)
     val uiState: StateFlow<UserListUiState> = _uiState.asStateFlow()

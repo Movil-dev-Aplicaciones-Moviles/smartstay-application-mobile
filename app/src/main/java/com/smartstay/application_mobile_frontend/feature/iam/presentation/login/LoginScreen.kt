@@ -70,7 +70,7 @@ fun LoginScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
-            val userRole = (uiState as LoginUiState.Success).authenticatedUser.user.role
+            val userRole = (uiState as LoginUiState.Success).authenticatedUser.user.role.lowercase()
             val permissions = UserPermissions(userRole)
 
             val destination = if (permissions.canManageUsers) {

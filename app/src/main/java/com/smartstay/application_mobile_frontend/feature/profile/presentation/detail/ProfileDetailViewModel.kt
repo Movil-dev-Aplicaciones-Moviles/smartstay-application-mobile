@@ -45,6 +45,14 @@ class ProfileDetailViewModel @Inject constructor(
         }
     }
 
-    // El método updateProfile iría aquí, enviando un PUT con los datos editados
-    // ...
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                tokenManager.clearSession()
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.value = ProfileDetailUiState.Error("Error al cerrar sesión")
+            }
+        }
+    }
 }

@@ -15,8 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import kotlinx.coroutines.launch
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
@@ -44,32 +46,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import com.smartstay.application_mobile_frontend.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.smartstay.application_mobile_frontend.R
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.User
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.navigation.compose.currentBackStackEntryAsState
 
-/**
- * Pantalla de lista de usuarios de SmartStay.
- *
- * Muestra todos los usuarios del alcance del actor autenticado en una lista vertical
- * y permite navegar al detalle de cada uno o crear un nuevo usuario.
- *
- * @param navController Controlador de navegación.
- * @param viewModel ViewModel de lista de usuarios inyectado por Hilt.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListScreen(
     navController: NavHostController,
-    viewModel: UserListViewModel = hiltViewModel()
+    @Suppress("DEPRECATION") viewModel: UserListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val permissions = viewModel.userPermissions
@@ -80,7 +70,6 @@ fun UserListScreen(
         viewModel.loadUsers()
     }
 
-    // Mostrar Snackbar en caso de error
     LaunchedEffect(uiState) {
         if (uiState is UserListUiState.Error) {
             val errorMessage = (uiState as UserListUiState.Error).message
@@ -98,15 +87,24 @@ fun UserListScreen(
                     )
                 },
                 actions = {
-                    // 1. Botón para navegar a la lista de Perfiles Biográficos (¡Recuperado!)
-                    IconButton(onClick = { navController.navigate(Routes.PROFILE_LIST) }) {
+                    // 1. Botón exclusivo para "Mi Perfil" autobiográfico
+                    IconButton(onClick = { navController.navigate(Routes.profileDetail(viewModel.currentUserId)) }) {
                         Icon(
-                            imageVector = Icons.Default.Badge,
-                            contentDescription = "Ver Perfiles Biográficos"
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Mi Perfil Personal",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
-                    // 2. Botón de refresco de usuarios existente
+                    // 2. Botón para gestionar las Fichas de Empleados
+                    IconButton(onClick = { navController.navigate(Routes.PROFILE_LIST) }) {
+                        Icon(
+                            imageVector = Icons.Default.Badge,
+                            contentDescription = "Gestionar Fichas de Empleados"
+                        )
+                    }
+
+                    // 3. Botón de Refresco
                     IconButton(onClick = { viewModel.loadUsers() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
@@ -114,7 +112,7 @@ fun UserListScreen(
                         )
                     }
 
-                    // 3. ÚNICO Botón de Cerrar Sesión (Limpio y delegando la lógica al ViewModel)
+                    // 4. Botón de Cerrar Sesión (Actualizado a AutoMirrored)
                     IconButton(onClick = {
                         viewModel.logout(onSuccess = {
                             navController.navigate(Routes.LOGIN) {
@@ -123,9 +121,9 @@ fun UserListScreen(
                         })
                     }) {
                         Icon(
-                            imageVector = Icons.Default.ExitToApp,
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Cerrar Sesión",
-                            tint = MaterialTheme.colorScheme.error // Rojo de advertencia
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 },
@@ -137,9 +135,7 @@ fun UserListScreen(
         floatingActionButton = {
             if (permissions.canCreateUsers) {
                 FloatingActionButton(
-                    onClick = {
-                        navController.navigate(Routes.CREATE_USER)
-                    }
+                    onClick = { navController.navigate(Routes.CREATE_USER) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -207,14 +203,6 @@ fun UserListScreen(
     }
 }
 
-/**
- * Tarjeta individual de usuario en la lista.
- *
- * Muestra el nombre de usuario, rol, estado y un indicador de navegación.
- *
- * @param user Usuario a mostrar.
- * @param onClick Acción al pulsar la tarjeta.
- */
 @Composable
 private fun UserCard(
     user: User,
@@ -270,12 +258,6 @@ private fun UserCard(
     }
 }
 
-/**
- * Retorna un color dinámico según el estado del usuario.
- *
- * @param status Estado del usuario (ej: "Active", "Inactive").
- * @return Color verde si está activo, rojo si está inactivo, gris en otro caso.
- */
 @Composable
 private fun statusColor(status: String): Color {
     return when (status.lowercase()) {
