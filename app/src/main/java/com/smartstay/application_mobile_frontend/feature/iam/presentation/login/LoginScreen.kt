@@ -41,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
 import com.smartstay.application_mobile_frontend.core.validation.InputValidator
+import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
 import kotlinx.coroutines.launch
 
 /**
@@ -69,7 +70,17 @@ fun LoginScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
-            navController.navigate(Routes.USER_LIST) {
+            val userRole = (uiState as LoginUiState.Success).authenticatedUser.user.role
+            val permissions = UserPermissions(userRole)
+
+            val destination = if (permissions.canManageUsers) {
+                Routes.USER_LIST
+            } else {
+                // Al loguearse, el backend ya retorna su id de usuario/perfil
+                Routes.profileDetail((uiState as LoginUiState.Success).authenticatedUser.user.id)
+            }
+
+            navController.navigate(destination) {
                 popUpTo(Routes.LOGIN) { inclusive = true }
             }
         }

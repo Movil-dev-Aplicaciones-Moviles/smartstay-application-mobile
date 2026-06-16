@@ -5,6 +5,7 @@ import com.smartstay.application_mobile_frontend.feature.profile.data.dto.Profil
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ProfileApiService {
     @GET("profiles")
@@ -12,4 +13,6 @@ interface ProfileApiService {
 
     @POST("profiles")
     suspend fun createProfile(@Body request: CreateProfileRequest): ProfileDto
+    @GET("profiles/{id}")
+    suspend fun getProfileById(@Path("id") profileId: Int): ProfileDto
 }

@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.smartstay.application_mobile_frontend.core.datastore.TokenManager
+import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.changepassword.ChangePasswordScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.createuser.CreateUserScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.edituser.EditUserScreen
@@ -16,6 +17,7 @@ import com.smartstay.application_mobile_frontend.feature.iam.presentation.login.
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userdetail.UserDetailScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userlist.UserListScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.create.CreateProfileScreen
+import com.smartstay.application_mobile_frontend.feature.profile.presentation.detail.ProfileDetailScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.list.ProfileListScreen
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -39,12 +41,14 @@ object Routes {
     const val CHANGE_PASSWORD = "change_password"
     const val PROFILE_LIST = "profile_list"
     const val CREATE_PROFILE = "create_profile"
+    const val PROFILE_DETAIL = "profile_detail/{profileId}"
 
     /** Construye la ruta concreta para el detalle de usuario dado su [userId]. */
     fun userDetail(userId: Int): String = "user_detail/$userId"
 
     /** Construye la ruta concreta para la edición parcial de un usuario dado su [userId]. */
     fun editUser(userId: Int): String = "edit_user/$userId"
+    fun profileDetail(profileId: Int): String = "profile_detail/$profileId"
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +57,7 @@ object Routes {
 
 object NavArgs {
     const val USER_ID = "userId"
+    const val PROFILE_ID = "profileId"
 }
 
 // ---------------------------------------------------------------------------
@@ -91,7 +96,18 @@ fun SmartStayNavGraph(navController: NavHostController) {
     // Determinar destino inicial evitando flujos o placeholders intermedios roto
     val startDestination: String = remember {
         val hasToken = runBlocking { tokenManager.getToken() != null }
-        if (hasToken) Routes.USER_LIST else Routes.LOGIN
+        val role = runBlocking { tokenManager.getRole() } ?: ""
+
+        if (hasToken) {
+            val permissions = UserPermissions(role)
+            if (permissions.canManageUsers) {
+                Routes.USER_LIST
+            } else {
+                Routes.PROFILE_DETAIL
+            }
+        } else {
+            Routes.LOGIN
+        }
     }
 
     NavHost(
@@ -152,6 +168,17 @@ fun SmartStayNavGraph(navController: NavHostController) {
         }
         composable(route = Routes.CREATE_PROFILE) {
             CreateProfileScreen(navController = navController)
+        }
+
+        composable(
+            route = Routes.PROFILE_DETAIL,
+            arguments = listOf(navArgument(NavArgs.PROFILE_ID) { type = NavType.IntType })
+        ) { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getInt(NavArgs.PROFILE_ID) ?: 0
+            ProfileDetailScreen(
+                navController = navController,
+                profileId = profileId
+            )
         }
     }
 }

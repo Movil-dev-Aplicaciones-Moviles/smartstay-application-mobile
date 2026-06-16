@@ -14,4 +14,8 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun createProfile(request: CreateProfileRequest): Profile {
         return api.createProfile(request).toDomain()
     }
+
+    override suspend fun getProfileById(profileId: Int): Profile {
+        return api.getProfileById(profileId).toDomain()
+    }
 }
