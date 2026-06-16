@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
@@ -51,6 +52,8 @@ import androidx.navigation.NavHostController
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.User
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 /**
@@ -95,18 +98,34 @@ fun UserListScreen(
                     )
                 },
                 actions = {
-                    // NUEVO: Botón para navegar a la lista de perfiles
+                    // 1. Botón para navegar a la lista de Perfiles Biográficos (¡Recuperado!)
                     IconButton(onClick = { navController.navigate(Routes.PROFILE_LIST) }) {
                         Icon(
                             imageVector = Icons.Default.Badge,
                             contentDescription = "Ver Perfiles Biográficos"
                         )
                     }
-                    // Botón de refresco existente
+
+                    // 2. Botón de refresco de usuarios existente
                     IconButton(onClick = { viewModel.loadUsers() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = stringResource(R.string.userlist_refresh_desc)
+                        )
+                    }
+
+                    // 3. ÚNICO Botón de Cerrar Sesión (Limpio y delegando la lógica al ViewModel)
+                    IconButton(onClick = {
+                        viewModel.logout(onSuccess = {
+                            navController.navigate(Routes.LOGIN) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        })
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ExitToApp,
+                            contentDescription = "Cerrar Sesión",
+                            tint = MaterialTheme.colorScheme.error // Rojo de advertencia
                         )
                     }
                 },

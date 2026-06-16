@@ -37,7 +37,7 @@ sealed class UserListUiState {
  */
 @HiltViewModel
 class UserListViewModel @Inject constructor(
-    private val tokenManager: TokenManager,
+    val tokenManager: TokenManager,
     private val iamRepository: IamRepository
 ) : ViewModel() {
 
@@ -50,6 +50,23 @@ class UserListViewModel @Inject constructor(
         val role = runBlocking { tokenManager.getRole() } ?: ""
         userPermissions = UserPermissions(actorRole = role)
         loadUsers()
+    }
+
+    /**
+     * Cierra la sesión del administrador actual limpiando de forma
+     * asíncrona todos los datos persistidos en el DataStore.
+     */
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                tokenManager.clearSession()
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.value = UserListUiState.Error(
+                    message = e.message ?: "Error al cerrar la sesión"
+                )
+            }
+        }
     }
 
     /**

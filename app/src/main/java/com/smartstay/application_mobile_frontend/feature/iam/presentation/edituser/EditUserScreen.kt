@@ -12,13 +12,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Hotel
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,26 +43,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import com.smartstay.application_mobile_frontend.R
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.smartstay.application_mobile_frontend.core.navigation.Routes
+import com.smartstay.application_mobile_frontend.R
 import com.smartstay.application_mobile_frontend.feature.iam.data.dto.UpdateUserRequest
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * Pantalla de edición de usuario de SmartStay.
- *
- * Permite modificar los campos editables de un usuario existente
- * mediante una actualización parcial (PUT).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditUserScreen(
     navController: NavHostController,
     userId: Int,
-    viewModel: EditUserViewModel = hiltViewModel()
+    @Suppress("DEPRECATION") viewModel: EditUserViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,36 +65,32 @@ fun EditUserScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     var usernameError by remember { mutableStateOf<String?>(null) }
 
-    // Cargar usuario al entrar
+    // Identificación Segura
+    val currentUserId = remember { runBlocking { viewModel.tokenManager.getUserId() } }
+    val isMe = userId == currentUserId
+
     LaunchedEffect(userId) {
         viewModel.loadUser(userId)
     }
 
-    // Estados locales del formulario
     var username by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("") }
     var hotelIdText by remember { mutableStateOf("") }
     var chainIdText by remember { mutableStateOf("") }
 
-    // Inicializar campos cuando el usuario se carga
     val loadedUser = (uiState as? EditUserUiState.Loaded)?.user
     LaunchedEffect(loadedUser) {
         loadedUser?.let { user ->
             username = user.username
-            role = user.role
-            status = user.status
             hotelIdText = user.hotelId?.toString() ?: ""
             chainIdText = user.chainId?.toString() ?: ""
         }
     }
 
-    // Efectos de Snackbar y navegación
     LaunchedEffect(uiState) {
         when (uiState) {
             is EditUserUiState.Success -> {
                 snackbarHostState.showSnackbar(successMessage)
-                delay(800L)
+                delay(800.milliseconds) // Resuelto el Warning del Legacy Long
                 navController.popBackStack()
             }
             is EditUserUiState.Error -> {
@@ -113,56 +104,32 @@ fun EditUserScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.edituser_title),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                },
+                title = { Text(text = stringResource(R.string.edituser_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.edituser_back_desc)
-                        )
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.edituser_back_desc))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             when (uiState) {
                 is EditUserUiState.Idle,
                 is EditUserUiState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
-
-                is EditUserUiState.Error -> {
-                    // El error se muestra via Snackbar
-                }
-
+                is EditUserUiState.Error -> { /* Handled via snackbar */ }
                 is EditUserUiState.Saving,
                 is EditUserUiState.Loaded,
                 is EditUserUiState.Success -> {
                     val isSaving = uiState is EditUserUiState.Saving
 
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(16.dp)
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)
                     ) {
-                        // Username (Editable)
                         OutlinedTextField(
                             value = username,
                             onValueChange = {
@@ -184,85 +151,41 @@ fun EditUserScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Role (Solo lectura, se cambia en el detalle con AssignRole)
-                        OutlinedTextField(
-                            value = role,
-                            onValueChange = { /* No-op */ },
-                            label = { Text(stringResource(R.string.edituser_role_label)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Badge,
-                                    contentDescription = null
+                        // Blindaje de IDs: Solo lo muestras si NO eres tú
+                        if (!isMe) {
+                            OutlinedTextField(
+                                value = hotelIdText,
+                                onValueChange = { hotelIdText = it },
+                                label = { Text(stringResource(R.string.edituser_hotel_id_label)) },
+                                leadingIcon = { Icon(imageVector = Icons.Default.Hotel, contentDescription = null) },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isSaving
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            OutlinedTextField(
+                                value = chainIdText,
+                                onValueChange = { chainIdText = it },
+                                label = { Text(stringResource(R.string.edituser_chain_id_label)) },
+                                leadingIcon = { Icon(imageVector = Icons.Default.Business, contentDescription = null) },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isSaving
+                            )
+                        } else {
+                            // UI Feedback
+                            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                                Text(
+                                    text = "Estás editando tu propia cuenta raíz corporativa. Tu nivel organizacional (Chain Admin) se mantiene global e intransferible.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(16.dp)
                                 )
-                            },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            readOnly = true,
-                            enabled = false
-                        )
-                        Text(
-                            text = "Para cambiar el rol, use la opción 'Asignar Rol' en el detalle del usuario.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 4.dp, top = 2.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Status (Solo lectura, se cambia con Desactivar/Activar)
-                        OutlinedTextField(
-                            value = status,
-                            onValueChange = { /* No-op */ },
-                            label = { Text(stringResource(R.string.edituser_status_label)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Circle,
-                                    contentDescription = null
-                                )
-                            },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            readOnly = true,
-                            enabled = false
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Hotel ID (Editable)
-                        OutlinedTextField(
-                            value = hotelIdText,
-                            onValueChange = { hotelIdText = it },
-                            label = { Text(stringResource(R.string.edituser_hotel_id_label)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Hotel,
-                                    contentDescription = null
-                                )
-                            },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !isSaving
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Chain ID (Editable)
-                        OutlinedTextField(
-                            value = chainIdText,
-                            onValueChange = { chainIdText = it },
-                            label = { Text(stringResource(R.string.edituser_chain_id_label)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Business,
-                                    contentDescription = null
-                                )
-                            },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !isSaving
-                        )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.height(24.dp))
 
@@ -272,8 +195,8 @@ fun EditUserScreen(
                                 val request = UpdateUserRequest(
                                     newUsername = username.ifBlank { null },
                                     newPassword = null,
-                                    newHotelId = hotelIdText.toIntOrNull(),
-                                    newChainId = chainIdText.toIntOrNull()
+                                    newHotelId = if (isMe) null else hotelIdText.toIntOrNull(),
+                                    newChainId = if (isMe) null else chainIdText.toIntOrNull()
                                 )
                                 viewModel.updateUser(userId, request)
                             },
@@ -281,11 +204,7 @@ fun EditUserScreen(
                             modifier = Modifier.fillMaxWidth().height(50.dp)
                         ) {
                             if (isSaving) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
                             } else {
                                 Text(stringResource(R.string.edituser_save_button))
                             }

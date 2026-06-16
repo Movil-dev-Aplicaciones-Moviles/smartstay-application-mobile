@@ -40,7 +40,7 @@ object Routes {
     const val EDIT_USER = "edit_user/{userId}"
     const val CHANGE_PASSWORD = "change_password"
     const val PROFILE_LIST = "profile_list"
-    const val CREATE_PROFILE = "create_profile"
+    const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
 
     /** Construye la ruta concreta para el detalle de usuario dado su [userId]. */
@@ -49,6 +49,8 @@ object Routes {
     /** Construye la ruta concreta para la edición parcial de un usuario dado su [userId]. */
     fun editUser(userId: Int): String = "edit_user/$userId"
     fun profileDetail(profileId: Int): String = "profile_detail/$profileId"
+
+    fun createProfile(email: String): String = "create_profile/$email"
 }
 
 // ---------------------------------------------------------------------------
@@ -93,17 +95,17 @@ fun SmartStayNavGraph(navController: NavHostController) {
         ).tokenManager
     }
 
-    // Determinar destino inicial evitando flujos o placeholders intermedios roto
     val startDestination: String = remember {
         val hasToken = runBlocking { tokenManager.getToken() != null }
         val role = runBlocking { tokenManager.getRole() } ?: ""
+        val currentUserId = runBlocking { tokenManager.getUserId() } ?: 0
 
         if (hasToken) {
             val permissions = UserPermissions(role)
             if (permissions.canManageUsers) {
                 Routes.USER_LIST
             } else {
-                Routes.PROFILE_DETAIL
+                Routes.profileDetail(currentUserId)
             }
         } else {
             Routes.LOGIN
@@ -166,8 +168,12 @@ fun SmartStayNavGraph(navController: NavHostController) {
         composable(route = Routes.PROFILE_LIST) {
             ProfileListScreen(navController = navController)
         }
-        composable(route = Routes.CREATE_PROFILE) {
-            CreateProfileScreen(navController = navController)
+        composable(
+            route = Routes.CREATE_PROFILE,
+            arguments = listOf(navArgument("userEmail") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val emailParam = backStackEntry.arguments?.getString("userEmail") ?: ""
+            CreateProfileScreen(navController = navController, prefilledEmail = emailParam)
         }
 
         composable(

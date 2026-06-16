@@ -34,16 +34,16 @@ fun ProfileDetailScreen(
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
-    // ... (puedes agregar los demás campos de dirección aquí)
 
-    // Lógica de Metavisión: ¿A quién le pertenece este perfil?
+    // ─── OPTIMIZACIÓN REACTIVA DE PERMISOS ───
+    // Extraemos el perfil de forma segura garantizando que el cálculo sea dinámico en cada ciclo
     val loadedProfile = (uiState as? ProfileDetailUiState.Success)?.profile
-    val isOwnProfile = loadedProfile?.email == currentEmail
 
-    // Regla de Negocio: Si no es mi perfil, los campos quedan bloqueados (Auditoría)
-    val isReadOnly = !isOwnProfile
+    // Condición reactiva: Evaluamos si el perfil cargado coincide con nuestra sesión
+    val isOwnProfile = remember(loadedProfile) { loadedProfile?.email == currentEmail }
+    val isReadOnly = remember(loadedProfile) { !isOwnProfile }
 
-    // Llenamos los datos cuando la API responde
+    // Sincronizamos las cajas de texto cuando la API responda exitosamente
     LaunchedEffect(loadedProfile) {
         loadedProfile?.let {
             firstName = it.firstName
@@ -58,8 +58,7 @@ fun ProfileDetailScreen(
             TopAppBar(
                 title = { Text(if (isOwnProfile) "Mi Perfil" else "Ficha del Empleado") },
                 navigationIcon = {
-                    // Si el empleado no tiene permisos administrativos, esta es su pantalla principal.
-                    // No debería poder retroceder a la lista de usuarios.
+                    // Si el administrador está auditando, puede volver a la lista de usuarios.
                     if (permissions.canManageUsers) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
@@ -98,7 +97,7 @@ fun ProfileDetailScreen(
                             value = firstName,
                             onValueChange = { firstName = it },
                             label = { Text("Nombre") },
-                            readOnly = isReadOnly, // ¡Aquí se aplica el bloqueo dinámico!
+                            readOnly = isReadOnly, // Bloqueo dinámico recalculado por el remember
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -114,7 +113,7 @@ fun ProfileDetailScreen(
                             value = email,
                             onValueChange = { email = it },
                             label = { Text("Correo Electrónico") },
-                            readOnly = true, // El correo JAMÁS se edita porque es la llave técnica
+                            readOnly = true, // El correo JAMÁS se edita porque es la llave de negocio
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -128,10 +127,12 @@ fun ProfileDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // El botón de Guardar solo existe si es tu propio perfil
+                        // El botón de Guardar solo aparece si el perfil es tuyo
                         if (isOwnProfile) {
                             Button(
-                                onClick = { /* viewModel.updateProfile(...) */ },
+                                onClick = {
+                                    // Aquí llamarás al método PUT para actualizar tus datos personales
+                                },
                                 modifier = Modifier.fillMaxWidth().height(50.dp)
                             ) {
                                 Text("Guardar Cambios Personales")

@@ -40,11 +40,12 @@ sealed class EditUserUiState {
  */
 @HiltViewModel
 class EditUserViewModel @Inject constructor(
-    private val tokenManager: TokenManager,
+    val tokenManager: TokenManager,
     private val iamRepository: IamRepository
 ) : ViewModel() {
 
     val userPermissions: UserPermissions
+    val currentUserId: Int = runBlocking { tokenManager.getUserId() } ?: -1
 
     private val _uiState = MutableStateFlow<EditUserUiState>(EditUserUiState.Idle)
     val uiState: StateFlow<EditUserUiState> = _uiState.asStateFlow()

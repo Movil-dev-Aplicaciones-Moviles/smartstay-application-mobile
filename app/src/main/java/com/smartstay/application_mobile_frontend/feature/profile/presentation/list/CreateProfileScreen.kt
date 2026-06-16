@@ -14,11 +14,15 @@ import androidx.navigation.NavHostController
 @Composable
 fun CreateProfileScreen(
     navController: NavHostController,
-    // Asume que creaste CreateProfileViewModel similar a CreateUserViewModel
+    prefilledEmail: String,
 ) {
-    var firstName by remember { mutableStateOf("") }
+    val sugerenciaNombre = remember(prefilledEmail) {
+        prefilledEmail.substringBefore('@').replaceFirstChar { it.uppercase() }
+    }
+
+    var firstName by remember { mutableStateOf(sugerenciaNombre) }
     var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(prefilledEmail) }
     var street by remember { mutableStateOf("") }
     var number by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
@@ -36,7 +40,14 @@ fun CreateProfileScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(value = firstName, onValueChange = { firstName = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(
+                value = email,
+                onValueChange = {},
+                label = { Text("Correo Electrónico del Trabajador") },
+                readOnly = true,
+                enabled = false,
+                modifier = Modifier.fillMaxWidth()
+            )
             OutlinedTextField(value = lastName, onValueChange = { lastName = it }, label = { Text("Apellido") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email (Coincidir con IAM)") }, modifier = Modifier.fillMaxWidth())
 

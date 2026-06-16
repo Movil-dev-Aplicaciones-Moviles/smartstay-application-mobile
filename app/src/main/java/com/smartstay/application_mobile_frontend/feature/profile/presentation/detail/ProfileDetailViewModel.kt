@@ -31,8 +31,16 @@ class ProfileDetailViewModel @Inject constructor(
             try {
                 val profile = repository.getProfileById(profileId)
                 _uiState.value = ProfileDetailUiState.Success(profile)
+            } catch (e: retrofit2.HttpException) {
+                if (e.code() == 500 || e.code() == 404) {
+                    _uiState.value = ProfileDetailUiState.Error(
+                        "Tu perfil biográfico aún no ha sido completado por Recursos Humanos. Por favor, contacta a tu administrador."
+                    )
+                } else {
+                    _uiState.value = ProfileDetailUiState.Error("Error de red: ${e.code()}")
+                }
             } catch (e: Exception) {
-                _uiState.value = ProfileDetailUiState.Error(e.message ?: "Error al cargar perfil")
+                _uiState.value = ProfileDetailUiState.Error("Tu perfil biográfico aún no ha sido registrado en el sistema.")
             }
         }
     }
