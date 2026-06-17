@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListScreen
 import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
+
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
 
@@ -44,14 +45,13 @@ fun SmartStayNavGraph() {
                     }
                 }
             } else {
+
                 val hotelListViewModel: HotelListViewModel = hiltViewModel()
                 val hotelUiState by hotelListViewModel.uiState.collectAsState()
 
                 HotelListScreen(
                     uiState = hotelUiState,
                     onRefresh = hotelListViewModel::fetchAllHotels
-                    // Tip: Puedes pasarle una función a HotelListScreen si quieres añadir un botón de "Cerrar Sesión" allí
-                    // onSignOut = { iamViewModel.signOut { } }
                 )
             }
         }
