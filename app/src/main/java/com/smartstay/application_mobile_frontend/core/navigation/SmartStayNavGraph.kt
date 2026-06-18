@@ -1,4 +1,3 @@
-// core/navigation/SmartStayNavGraph.kt
 package com.smartstay.application_mobile_frontend.core.navigation
 
 import androidx.compose.runtime.Composable
@@ -9,11 +8,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListScreen
-import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
 
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
+import com.smartstay.application_mobile_frontend.feature.options.presentation.HotelListScreen
+import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsScreen
+import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsViewModel
 
 @Composable
 fun SmartStayNavGraph() {
@@ -45,15 +46,23 @@ fun SmartStayNavGraph() {
                     }
                 }
             } else {
-
                 val hotelListViewModel: HotelListViewModel = hiltViewModel()
                 val hotelUiState by hotelListViewModel.uiState.collectAsState()
 
                 HotelListScreen(
                     uiState = hotelUiState,
-                    onRefresh = hotelListViewModel::fetchAllHotels
+                    onRefresh = hotelListViewModel::fetchAllHotels,
+                    onNavigateToOptions = {
+                        navController.navigate("accommodation_options")
+                    }
                 )
             }
+        }
+
+        // Nuevo Bounded Context conectado a la API
+        composable("accommodation_options") {
+            val optionsViewModel: OptionsViewModel = hiltViewModel()
+            OptionsScreen(viewModel = optionsViewModel)
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.smartstay.application_mobile_frontend.feature.accommodation.presentation
+package com.smartstay.application_mobile_frontend.feature.options.presentation // CORREGIDO: Cambiado de accommodation a options
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,19 +23,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.Hotel
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListUiState
 import com.smartstay.application_mobile_frontend.ui.theme.ApplicationmobilefrontendTheme
 
 @Composable
 fun HotelListScreen(
     uiState: HotelListUiState,
     onRefresh: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToOptions: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         onRefresh()
     }
 
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        // AGREGADO: El botón flotante para ir a Categorías/Amenities si no está cargando
+        floatingActionButton = {
+            if (!uiState.isLoading) {
+                FloatingActionButton(onClick = onNavigateToOptions) {
+                    Text(
+                        text = "Ver Opciones",
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
         when {
             uiState.isLoading -> {
                 Column(
@@ -94,7 +110,12 @@ fun HotelListScreen(
 
             else -> {
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(
+                        top = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 80.dp // Espacio extra abajo para que el botón flotante no tape el último hotel
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
                         .fillMaxSize()
@@ -163,8 +184,8 @@ private fun HotelListScreenPreview() {
                     )
                 )
             ),
-            onRefresh = {}
+            onRefresh = {},
+            onNavigateToOptions = {}
         )
     }
 }
-

@@ -4,10 +4,10 @@ import com.smartstay.application_mobile_frontend.feature.options.domain.model.Am
 import com.smartstay.application_mobile_frontend.feature.options.domain.model.HotelCategory
 
 interface OptionsRepository {
-    suspend fun getAmenities(): Result<List<Amenity>>
+    suspend fun getAmenities(): Result<List<String>>
     suspend fun saveAmenity(amenity: Amenity): Result<Amenity>
     suspend fun updateAmenity(amenity: Amenity): Result<Amenity>
     
-    suspend fun getHotelCategories(): Result<List<HotelCategory>>
+    suspend fun getHotelCategories(): Result<List<String>>
     suspend fun saveHotelCategory(category: HotelCategory): Result<HotelCategory>
 }

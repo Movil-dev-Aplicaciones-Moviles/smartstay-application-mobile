@@ -11,9 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.smartstay.application_mobile_frontend.feature.options.domain.model.Amenity
-import com.smartstay.application_mobile_frontend.feature.options.domain.model.HotelCategory
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionsScreen(
     viewModel: OptionsViewModel
@@ -22,13 +21,8 @@ fun OptionsScreen(
 
     Scaffold(
         topBar = {
-            Text(
-                text = "Options",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center
+            CenterAlignedTopAppBar(
+                title = { Text("Accommodation Options") }
             )
         }
     ) { paddingValues ->
@@ -37,11 +31,20 @@ fun OptionsScreen(
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (uiState.errorMessage != null) {
-                Text(
-                    text = uiState.errorMessage!!,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = uiState.errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    Button(onClick = { viewModel.loadOptions() }) {
+                        Text("Retry")
+                    }
+                }
             } else {
                 OptionsContent(
                     amenities = uiState.amenities,
@@ -54,8 +57,8 @@ fun OptionsScreen(
 
 @Composable
 fun OptionsContent(
-    amenities: List<Amenity>,
-    categories: List<HotelCategory>
+    amenities: List<String>,
+    categories: List<String>
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -63,24 +66,50 @@ fun OptionsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Text("Hotel Categories", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = "Hotel Categories",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
-        items(categories) { category ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(category.name, style = MaterialTheme.typography.titleMedium)
-                    Text(category.description, style = MaterialTheme.typography.bodyMedium)
+        if (categories.isEmpty()) {
+            item { Text("No categories found", style = MaterialTheme.typography.bodyMedium) }
+        } else {
+            items(categories) { category ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        Text(category, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
         }
+
         item {
-            Text("Amenities", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Amenities",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
-        items(amenities) { amenity ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(amenity.name, style = MaterialTheme.typography.titleMedium)
-                    Text(amenity.description, style = MaterialTheme.typography.bodyMedium)
+        if (amenities.isEmpty()) {
+            item { Text("No amenities found", style = MaterialTheme.typography.bodyMedium) }
+        } else {
+            items(amenities) { amenity ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        Text(amenity, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
         }

@@ -12,10 +12,10 @@ class OptionsRepositoryImpl @Inject constructor(
     private val apiService: OptionsApiService
 ) : OptionsRepository {
 
-    override suspend fun getAmenities(): Result<List<Amenity>> {
+    override suspend fun getAmenities(): Result<List<String>> {
         return try {
             val response = apiService.getAmenities()
-            Result.success(response.map { it.toDomain() })
+            Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -39,10 +39,10 @@ class OptionsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getHotelCategories(): Result<List<HotelCategory>> {
+    override suspend fun getHotelCategories(): Result<List<String>> {
         return try {
             val response = apiService.getHotelCategories()
-            Result.success(response.map { it.toDomain() })
+            Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
