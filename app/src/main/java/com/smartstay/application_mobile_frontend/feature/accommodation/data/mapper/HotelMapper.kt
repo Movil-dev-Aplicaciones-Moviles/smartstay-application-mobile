@@ -5,16 +5,16 @@ import com.smartstay.application_mobile_frontend.feature.accommodation.domain.mo
 
 fun HotelDto.toDomain(): Hotel {
     return Hotel(
-        id = this.id,
-        hostId = this.hostId,
-        name = this.name,
+        id = this.id ?: 0,
+        hostId = this.hostId ?: 0,
+        name = this.name ?: "Unknown Hotel",
         address = this.address,
         city = this.city,
         country = this.country,
         imageUrl = this.imageUrl,
         description = this.description,
         type = this.type,
-        amenities = this.amenities,
+        amenities = this.amenities ?: emptyList(),
         lowestPrice = 0.0
     )
 }
