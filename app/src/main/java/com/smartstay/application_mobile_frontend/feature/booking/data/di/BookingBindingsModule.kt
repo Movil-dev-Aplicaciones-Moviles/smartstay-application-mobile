@@ -1,7 +1,7 @@
 // feature/booking/data/di/BookingBindingsModule.kt
 package com.smartstay.application_mobile_frontend.feature.booking.data.di
 
-import com.smartstay.application_mobile_frontend.domain.repository.bookings.BookingRepository
+import com.smartstay.application_mobile_frontend.feature.booking.domain.repository.BookingRepository
 import com.smartstay.application_mobile_frontend.feature.booking.data.remote.BookingApiService
 import com.smartstay.application_mobile_frontend.feature.booking.data.repositories.BookingRepositoryImpl
 import dagger.Binds
@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class `BookingBindingsModule.kt` {
+abstract class BookingBindingsModule {
 
     @Binds
     @Singleton
