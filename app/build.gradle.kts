@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -19,6 +21,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val localProperties = Properties().apply {
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                localPropertiesFile.inputStream().use { load(it) }
+            }
+        }
+        val mercadoPagoAccessToken = localProperties.getProperty("MERCADO_PAGO_ACCESS_TOKEN").orEmpty()
+        val mercadoPagoCheckoutUrl = localProperties.getProperty("MERCADO_PAGO_CHECKOUT_URL").orEmpty()
+
+        buildConfigField("String", "MERCADO_PAGO_ACCESS_TOKEN", "\"$mercadoPagoAccessToken\"")
+        buildConfigField("String", "MERCADO_PAGO_CHECKOUT_URL", "\"$mercadoPagoCheckoutUrl\"")
     }
 
     buildTypes {
@@ -38,6 +52,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
