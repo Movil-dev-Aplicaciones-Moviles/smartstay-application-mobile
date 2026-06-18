@@ -1,4 +1,4 @@
-package com.smartstay.application_mobile_frontend.feature.options.presentation // CORREGIDO: Cambiado de accommodation a options
+package com.smartstay.application_mobile_frontend.feature.accommodation.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
