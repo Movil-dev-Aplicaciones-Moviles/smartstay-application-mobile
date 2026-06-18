@@ -117,16 +117,21 @@ private fun HotelCard(hotel: Hotel, modifier: Modifier = Modifier) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = hotel.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "${hotel.city}, ${hotel.country}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = hotel.description,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            val location = listOfNotNull(hotel.city, hotel.country).joinToString(", ")
+            if (location.isNotEmpty()) {
+                Text(
+                    text = location,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+            hotel.description?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
             Text(
                 text = "Desde $${"%.2f".format(hotel.lowestPrice)}",
                 style = MaterialTheme.typography.labelLarge,
