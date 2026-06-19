@@ -28,7 +28,8 @@ android {
                 localPropertiesFile.inputStream().use { load(it) }
             }
         }
-        val mercadoPagoAccessToken = localProperties.getProperty("MERCADO_PAGO_ACCESS_TOKEN").orEmpty()
+        val mercadoPagoAccessToken = localProperties.getProperty("MERCADO_PAGO_ACCESS_TOKEN")
+            ?: "APP_USR-2766729888095691-061719-d8dd88d4a55d6d7b509838b221ab4660-3479686975"
         val mercadoPagoCheckoutUrl = localProperties.getProperty("MERCADO_PAGO_CHECKOUT_URL").orEmpty()
 
         buildConfigField("String", "MERCADO_PAGO_ACCESS_TOKEN", "\"$mercadoPagoAccessToken\"")

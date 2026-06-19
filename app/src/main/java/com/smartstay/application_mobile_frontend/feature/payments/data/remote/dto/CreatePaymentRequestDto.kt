@@ -3,9 +3,9 @@ package com.smartstay.application_mobile_frontend.feature.payments.data.remote.d
 data class CreatePaymentRequestDto(
     val bookingId: Int,
     val amount: Double,
-    val currency: String,
-    val method: String,
-    val provider: String,
-    val cardHolderName: String?,
-    val cardToken: String?
+    val paymentMethod: String,
+    val cardNumber: String,
+    val cardHolderName: String,
+    val expirationDate: String,
+    val cvv: String
 )

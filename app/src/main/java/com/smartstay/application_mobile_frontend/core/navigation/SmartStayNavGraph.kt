@@ -1,5 +1,6 @@
 package com.smartstay.application_mobile_frontend.core.navigation
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -9,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.smartstay.application_mobile_frontend.PaymentReturnData
 import com.smartstay.application_mobile_frontend.core.datastore.TokenManager
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.changepassword.ChangePasswordScreen
@@ -18,7 +20,9 @@ import com.smartstay.application_mobile_frontend.feature.iam.presentation.login.
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userdetail.UserDetailScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userlist.UserListScreen
 import com.smartstay.application_mobile_frontend.feature.payments.presentation.screens.PaymentCheckoutDemoScreen
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.screens.PaymentReturnScreen
 import com.smartstay.application_mobile_frontend.feature.payments.presentation.viewmodel.PaymentCheckoutViewModel
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.viewmodel.PaymentReturnViewModel
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.create.CreateProfileScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.detail.ProfileDetailScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.list.ProfileListScreen
@@ -38,7 +42,7 @@ object Routes {
     const val PROFILE_LIST = "profile_list"
     const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
-    const val PAYMENT_DEMO = "payments/demo"
+    const val PAYMENT_RETURN = "payments/return/{status}?bookingId={bookingId}&amount={amount}"
     const val PAYMENT_CHECKOUT =
         "payments/checkout?bookingId={bookingId}&hotelId={hotelId}&roomId={roomId}&amount={amount}&hotelName={hotelName}"
 
@@ -48,6 +52,12 @@ object Routes {
     fun profileDetail(profileId: Int): String = "profile_detail/$profileId"
 
     fun createProfile(email: String): String = "create_profile/$email"
+
+    fun paymentReturn(status: String, bookingId: Int? = null, amount: Double? = null): String {
+        return "payments/return/$status" +
+            "?bookingId=${bookingId ?: -1}" +
+            "&amount=${amount ?: -1.0}"
+    }
 
     fun paymentCheckout(
         bookingId: Int? = null,
@@ -74,6 +84,7 @@ object NavArgs {
     const val ROOM_ID = "roomId"
     const val AMOUNT = "amount"
     const val HOTEL_NAME = "hotelName"
+    const val PAYMENT_STATUS = "status"
 }
 
 @EntryPoint
@@ -83,7 +94,11 @@ interface SmartStayNavGraphEntryPoint {
 }
 
 @Composable
-fun SmartStayNavGraph(navController: NavHostController) {
+fun SmartStayNavGraph(
+    navController: NavHostController,
+    paymentReturnData: PaymentReturnData? = null,
+    onPaymentReturnConsumed: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     val tokenManager: TokenManager = remember {
@@ -107,6 +122,21 @@ fun SmartStayNavGraph(navController: NavHostController) {
             }
         } else {
             Routes.LOGIN
+        }
+    }
+
+    LaunchedEffect(paymentReturnData) {
+        paymentReturnData?.let { data ->
+            navController.navigate(
+                Routes.paymentReturn(
+                    status = data.status,
+                    bookingId = data.bookingId,
+                    amount = data.amount
+                )
+            ) {
+                launchSingleTop = true
+            }
+            onPaymentReturnConsumed()
         }
     }
 
@@ -179,11 +209,33 @@ fun SmartStayNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(route = Routes.PAYMENT_DEMO) {
-            val paymentCheckoutViewModel: PaymentCheckoutViewModel = hiltViewModel()
+        composable(
+            route = Routes.PAYMENT_RETURN,
+            arguments = listOf(
+                navArgument(NavArgs.PAYMENT_STATUS) { type = NavType.StringType },
+                navArgument(NavArgs.BOOKING_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.AMOUNT) {
+                    type = NavType.FloatType
+                    defaultValue = -1f
+                }
+            )
+        ) { backStackEntry ->
+            val status = backStackEntry.arguments?.getString(NavArgs.PAYMENT_STATUS).orEmpty()
+            val bookingId = backStackEntry.arguments?.getInt(NavArgs.BOOKING_ID).toNullableId()
+            val amount = backStackEntry.arguments
+                ?.getFloat(NavArgs.AMOUNT)
+                ?.takeIf { it >= 0f }
+                ?.toDouble()
+            val paymentReturnViewModel: PaymentReturnViewModel = hiltViewModel()
 
-            PaymentCheckoutDemoScreen(
-                viewModel = paymentCheckoutViewModel,
+            PaymentReturnScreen(
+                status = status,
+                bookingId = bookingId,
+                amount = amount,
+                viewModel = paymentReturnViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

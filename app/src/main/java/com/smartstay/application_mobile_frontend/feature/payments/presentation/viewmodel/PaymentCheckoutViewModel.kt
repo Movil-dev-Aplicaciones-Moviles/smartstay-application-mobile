@@ -30,8 +30,6 @@ data class PaymentCheckoutUiState(
     val currency: String = "PEN",
     val selectedMethod: PaymentMethod = PaymentMethod.MERCADO_PAGO,
     val checkoutUrl: String? = null,
-    val hasOpenedCheckout: Boolean = false,
-    val isPaymentConfirmed: Boolean = false,
     val isLoadingDetails: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
@@ -61,8 +59,6 @@ class PaymentCheckoutViewModel @Inject constructor(
                 amount = amount ?: it.amount,
                 hotelName = hotelName?.ifBlank { null } ?: it.hotelName,
                 checkoutUrl = null,
-                hasOpenedCheckout = false,
-                isPaymentConfirmed = false,
                 errorMessage = null
             )
         }
@@ -131,8 +127,6 @@ class PaymentCheckoutViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         checkoutUrl = fixedCheckoutUrl,
-                        hasOpenedCheckout = false,
-                        isPaymentConfirmed = false,
                         errorMessage = null
                     )
                 }
@@ -151,6 +145,7 @@ class PaymentCheckoutViewModel @Inject constructor(
             }
 
             val state = _uiState.value
+            val returnQuery = "bookingId=${state.bookingId ?: -1}&amount=${state.amount}"
             val request = MercadoPagoPreferenceRequestDto(
                 items = listOf(
                     MercadoPagoPreferenceItemDto(
@@ -162,9 +157,9 @@ class PaymentCheckoutViewModel @Inject constructor(
                 ),
                 externalReference = buildExternalReference(state),
                 backUrls = MercadoPagoBackUrlsDto(
-                    success = "https://www.mercadopago.com.pe/",
-                    failure = "https://www.mercadopago.com.pe/",
-                    pending = "https://www.mercadopago.com.pe/"
+                    success = "smartstay://payment/success?$returnQuery",
+                    failure = "smartstay://payment/failure?$returnQuery",
+                    pending = "smartstay://payment/pending?$returnQuery"
                 )
             )
 
@@ -179,8 +174,6 @@ class PaymentCheckoutViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         checkoutUrl = checkoutUrl,
-                        hasOpenedCheckout = false,
-                        isPaymentConfirmed = false,
                         errorMessage = if (checkoutUrl.isNullOrBlank()) {
                             "Mercado Pago no devolvio una URL de checkout."
                         } else {
@@ -203,24 +196,9 @@ class PaymentCheckoutViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 checkoutUrl = null,
-                hasOpenedCheckout = false,
-                isPaymentConfirmed = false,
                 errorMessage = null
             )
         }
-    }
-
-    fun confirmPaymentManually() {
-        _uiState.update {
-            it.copy(
-                isPaymentConfirmed = true,
-                errorMessage = null
-            )
-        }
-    }
-
-    fun markCheckoutOpened() {
-        _uiState.update { it.copy(hasOpenedCheckout = true) }
     }
 }
 

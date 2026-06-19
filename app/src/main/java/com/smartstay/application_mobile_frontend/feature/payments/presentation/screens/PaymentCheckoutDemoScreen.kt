@@ -2,18 +2,22 @@ package com.smartstay.application_mobile_frontend.feature.payments.presentation.
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,8 +60,6 @@ fun PaymentCheckoutDemoScreen(
         onBack = onBack,
         onCreateCheckout = viewModel::createMercadoPagoCheckout,
         onOpenCheckout = uriHandler::openUri,
-        onCheckoutOpened = viewModel::markCheckoutOpened,
-        onConfirmPayment = viewModel::confirmPaymentManually,
         modifier = modifier
     )
 }
@@ -68,8 +70,6 @@ private fun PaymentCheckoutContent(
     onBack: () -> Unit,
     onCreateCheckout: () -> Unit,
     onOpenCheckout: (String) -> Unit,
-    onCheckoutOpened: () -> Unit,
-    onConfirmPayment: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -81,30 +81,31 @@ private fun PaymentCheckoutContent(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver"
+                    )
+                }
                 Text(
                     text = "Pago con Mercado Pago",
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
             BookingSummaryCard(uiState = uiState)
-            MercadoPagoMethodCard()
 
             uiState.checkoutUrl?.let { checkoutUrl ->
                 MercadoPagoCheckoutCard(
                     checkoutUrl = checkoutUrl,
-                    onOpenCheckout = onOpenCheckout,
-                    onCheckoutOpened = onCheckoutOpened,
-                    onConfirmPayment = onConfirmPayment,
-                    hasOpenedCheckout = uiState.hasOpenedCheckout,
-                    isPaymentConfirmed = uiState.isPaymentConfirmed
+                    onOpenCheckout = onOpenCheckout
                 )
-            }
-
-            if (uiState.isPaymentConfirmed) {
-                PaymentConfirmedCard(uiState = uiState)
             }
 
             uiState.errorMessage?.let { errorMessage ->
@@ -115,28 +116,23 @@ private fun PaymentCheckoutContent(
                 )
             }
 
-            Button(
-                onClick = onCreateCheckout,
-                enabled = !uiState.isLoading && !uiState.isLoadingDetails,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.height(24.dp)
-                    )
-                } else {
-                    Text(text = "Crear checkout ${uiState.currency} ${"%.2f".format(uiState.amount)}")
+            if (uiState.checkoutUrl == null) {
+                Button(
+                    onClick = onCreateCheckout,
+                    enabled = !uiState.isLoading && !uiState.isLoadingDetails,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.height(24.dp)
+                        )
+                    } else {
+                        Text(text = "Proceder al pago")
+                    }
                 }
-            }
-
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Volver")
             }
         }
     }
@@ -153,28 +149,14 @@ private fun BookingSummaryCard(uiState: PaymentCheckoutUiState) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = uiState.hotelName,
+                text = "Nombre del hotel: ${uiState.hotelName}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            uiState.hotelLocation?.let { location ->
-                Text(text = location)
-            }
-            uiState.bookingId?.let { bookingId ->
-                Text(text = "Reserva #$bookingId")
-            }
-            uiState.hotelId?.let { hotelId ->
-                Text(text = "Hotel ID: $hotelId")
-            }
-            uiState.roomId?.let { roomId ->
-                Text(text = "Habitacion ID: $roomId")
-            }
-            uiState.roomTypeName?.let { roomTypeName ->
-                Text(text = "Tipo: $roomTypeName")
-            }
-            Text(text = "${uiState.nights} noches")
+            Text(text = "Numero de habitacion: ${uiState.roomId ?: "-"}")
+            Text(text = "Cantidad de noches: ${uiState.nights}")
             Text(
-                text = "Total: ${uiState.currency} ${"%.2f".format(uiState.amount)}",
+                text = "Monto total: ${uiState.currency} ${"%.2f".format(uiState.amount)}",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -190,39 +172,9 @@ private fun BookingSummaryCard(uiState: PaymentCheckoutUiState) {
 }
 
 @Composable
-private fun MercadoPagoMethodCard() {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = "Metodo de pago",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Mercado Pago",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-@Composable
 private fun MercadoPagoCheckoutCard(
     checkoutUrl: String,
-    onOpenCheckout: (String) -> Unit,
-    onCheckoutOpened: () -> Unit,
-    onConfirmPayment: () -> Unit,
-    hasOpenedCheckout: Boolean,
-    isPaymentConfirmed: Boolean
+    onOpenCheckout: (String) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -240,47 +192,10 @@ private fun MercadoPagoCheckoutCard(
                 fontWeight = FontWeight.Bold
             )
             Button(
-                onClick = {
-                    onOpenCheckout(checkoutUrl)
-                    onCheckoutOpened()
-                },
+                onClick = { onOpenCheckout(checkoutUrl) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "Abrir Mercado Pago")
-            }
-            if (hasOpenedCheckout) {
-                Button(
-                    onClick = onConfirmPayment,
-                    enabled = !isPaymentConfirmed,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = if (isPaymentConfirmed) "Pago confirmado" else "Confirmar pago realizado")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PaymentConfirmedCard(uiState: PaymentCheckoutUiState) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "Pago completado",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(text = "Monto pagado: ${uiState.currency} ${"%.2f".format(uiState.amount)}")
-            uiState.roomId?.let { roomId ->
-                Text(text = "Habitacion ID: $roomId")
             }
         }
     }

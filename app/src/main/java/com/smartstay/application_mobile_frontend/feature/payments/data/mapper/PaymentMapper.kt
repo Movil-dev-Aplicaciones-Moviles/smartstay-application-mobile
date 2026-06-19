@@ -15,11 +15,11 @@ fun CreatePaymentCommand.toDto(): CreatePaymentRequestDto {
     return CreatePaymentRequestDto(
         bookingId = bookingId,
         amount = amount,
-        currency = currency,
-        method = method.name,
-        provider = provider.name,
-        cardHolderName = cardHolderName,
-        cardToken = cardToken
+        paymentMethod = method.name,
+        cardNumber = cardToken ?: "4009175323280616",
+        cardHolderName = cardHolderName ?: "APRO",
+        expirationDate = "11/30",
+        cvv = "123"
     )
 }
 

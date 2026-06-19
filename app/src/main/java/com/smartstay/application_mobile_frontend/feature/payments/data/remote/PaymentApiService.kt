@@ -9,15 +9,15 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface PaymentApiService {
-    @POST("api/v1/payments")
+    @POST("payments")
     suspend fun createPayment(@Body request: CreatePaymentRequestDto): PaymentDto
 
-    @POST("api/v1/payments/mercado-pago/checkout")
+    @POST("payments/mercado-pago/checkout")
     suspend fun createMercadoPagoCheckout(@Body request: CreatePaymentRequestDto): PaymentCheckoutDto
 
-    @GET("api/v1/payments/{id}")
+    @GET("payments/{id}")
     suspend fun getPaymentById(@Path("id") id: Int): PaymentDto
 
-    @GET("api/v1/bookings/{bookingId}/payments")
+    @GET("payments/booking/{bookingId}")
     suspend fun getPaymentsByBookingId(@Path("bookingId") bookingId: Int): List<PaymentDto>
 }
