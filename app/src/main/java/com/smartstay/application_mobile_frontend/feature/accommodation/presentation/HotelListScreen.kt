@@ -1,4 +1,4 @@
-package com.smartstay.application_mobile_frontend.feature.options.presentation // CORREGIDO: Cambiado de accommodation a options
+package com.smartstay.application_mobile_frontend.feature.accommodation.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -111,15 +111,13 @@ fun HotelListScreen(
             else -> {
                 LazyColumn(
                     contentPadding = PaddingValues(
-                        top = 16.dp,
+                        top = innerPadding.calculateTopPadding() + 16.dp,
+                        bottom = 80.dp,
                         start = 16.dp,
-                        end = 16.dp,
-                        bottom = 80.dp // Espacio extra abajo para que el botón flotante no tape el último hotel
+                        end = 16.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(uiState.hotels, key = { it.id }) { hotel ->
                         HotelCard(hotel = hotel)

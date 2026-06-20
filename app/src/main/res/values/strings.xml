@@ -1,3 +1,109 @@
 <resources>
     <string name="app_name">application-mobile-frontend</string>
+
+    <!-- Login Screen -->
+    <string name="login_smartstay_title">SmartStay</string>
+    <string name="login_username_label">Usuario</string>
+    <string name="login_password_label">Contraseña</string>
+    <string name="login_sign_in_button">Ingresar</string>
+    <string name="login_sign_up_link">¿No tienes cuenta? Regístrate</string>
+    <string name="login_username_icon_desc">Icono de usuario</string>
+    <string name="login_password_icon_desc">Icono de contraseña</string>
+    <string name="login_show_password_desc">Mostrar contraseña</string>
+    <string name="login_hide_password_desc">Ocultar contraseña</string>
+    <string name="icon_confirm_password_desc">Icono de confirmar contraseña</string>
+
+    <!-- Sign Up Screen -->
+    <string name="signup_title">Crear Cuenta</string>
+    <string name="signup_username_label">Usuario</string>
+    <string name="signup_password_label">Contraseña</string>
+    <string name="signup_confirm_password_label">Confirmar contraseña</string>
+    <string name="signup_register_button">Registrarse</string>
+    <string name="signup_login_link">¿Ya tienes cuenta? Inicia sesión</string>
+
+    <!-- Change Password Screen -->
+    <string name="change_password_title">Cambiar Contraseña</string>
+    <string name="change_password_current_label">Contraseña actual</string>
+    <string name="change_password_current_icon_desc">Icono de contraseña actual</string>
+    <string name="change_password_new_label">Nueva contraseña</string>
+    <string name="change_password_new_icon_desc">Icono de nueva contraseña</string>
+    <string name="change_password_confirm_new_label">Confirmar nueva contraseña</string>
+    <string name="change_password_confirm_new_icon_desc">Icono de confirmar nueva contraseña</string>
+    <string name="change_password_button">Cambiar Contraseña</string>
+    <string name="change_password_success">Contraseña actualizada correctamente</string>
+
+    <!-- User List Screen -->
+    <string name="userlist_title">Usuarios</string>
+    <string name="userlist_refresh_desc">Recargar usuarios</string>
+    <string name="userlist_fab_create_desc">Crear usuario</string>
+    <string name="userlist_retry_button">Reintentar</string>
+
+    <!-- User Detail Screen -->
+    <string name="userdetail_title">Detalle de Usuario</string>
+    <string name="userdetail_back_desc">Volver</string>
+    <string name="userdetail_edit_button">Editar Usuario</string>
+    <string name="userdetail_assign_role_button">Asignar Rol</string>
+    <string name="userdetail_deactivate_button">Desactivar Usuario</string>
+    <string name="userdetail_already_inactive">Usuario ya inactivo</string>
+    <string name="userdetail_retry_button">Reintentar</string>
+    <string name="userdetail_no_hotel">No asignado</string>
+    <string name="userdetail_no_chain">No asignado</string>
+    <string name="userdetail_unknown_date">Desconocido</string>
+    <string name="userdetail_field_id">ID</string>
+    <string name="userdetail_field_hotel_id">Hotel ID</string>
+    <string name="userdetail_field_chain_id">Chain ID</string>
+    <string name="userdetail_field_created">Creado</string>
+    <string name="userdetail_field_updated">Actualizado</string>
+
+    <!-- Deactivate Dialog -->
+    <string name="deactivate_dialog_title">¿Desactivar usuario?</string>
+    <string name="deactivate_dialog_message">¿Estás seguro de que deseas desactivar a %s?</string>
+    <string name="deactivate_dialog_confirm">Confirmar</string>
+    <string name="deactivate_dialog_cancel">Cancelar</string>
+
+    <!-- Assign Role Dialog -->
+    <string name="assign_role_dialog_title">Asignar Rol</string>
+    <string name="assign_role_dialog_no_roles">No hay roles disponibles para asignar.</string>
+    <string name="assign_role_dialog_cancel">Cancelar</string>
+
+    <!-- Edit User Screen -->
+    <string name="edituser_title">Editar Usuario</string>
+    <string name="edituser_back_desc">Volver</string>
+    <string name="edituser_username_label">Username</string>
+    <string name="edituser_role_label">Role</string>
+    <string name="edituser_role_hint">ChainAdmin, HotelAdmin, Recepcionista, Guest, Host</string>
+    <string name="edituser_status_label">Status</string>
+    <string name="edituser_status_hint">Active, Inactive</string>
+    <string name="edituser_hotel_id_label">Hotel ID</string>
+    <string name="edituser_chain_id_label">Chain ID</string>
+    <string name="edituser_save_button">Guardar Cambios</string>
+    <string name="edituser_success">Usuario actualizado correctamente</string>
+
+    <!-- NavGraph strings -->
+    <string name="nav_dashboard_title">Dashboard</string>
+    <string name="nav_my_profile_button">Mi Perfil</string>
+    <string name="nav_user_list_button">Lista de Usuarios</string>
+    <string name="nav_user_detail_button">Detalle Usuario (ID=1)</string>
+    <string name="nav_change_password_button">Cambiar Contraseña</string>
+    <string name="nav_logout_button">Cerrar Sesión</string>
+    <string name="nav_user_list_placeholder">User List</string>
+    <string name="nav_view_user_button">Ver Usuario 1</string>
+    <string name="nav_back_button">Volver</string>
+    <string name="nav_edit_user_placeholder">Edit User</string>
+
+    <!-- Error messages -->
+    <string name="error_server_prefix">Error del servidor:</string>
+    <string name="error_connection">Error de conexión. Verifica tu internet.</string>
+    <string name="error_unknown">Error desconocido</string>
+    <string name="error_authentication">Error de autenticación</string>
+    <string name="error_load_user">Error al cargar el usuario</string>
+    <string name="error_load_users">Error al obtener usuarios</string>
+    <string name="error_update_user">Error al actualizar el usuario</string>
+    <string name="error_deactivate_user">Error al desactivar el usuario</string>
+    <string name="error_assign_role">Error al asignar el rol</string>
+    <string name="error_session_expired">Sesión expirada</string>
+
+    <!-- LoadingComponents -->
+    <string name="loading_default">Cargando…</string>
+    <string name="error_retry_button">Reintentar</string>
 </resources>
