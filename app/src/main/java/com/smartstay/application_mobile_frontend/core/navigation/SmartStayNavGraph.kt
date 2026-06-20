@@ -206,6 +206,9 @@ fun SmartStayNavGraph(navController: NavHostController) {
                         }
                     })
                 },
+                onHotelSelected = { hotelId ->
+                    // Reservado para flujo de Bookings
+                },
                 onNavigateToOptions = {
                     navController.navigate(Routes.ACCOMMODATION_OPTIONS)
                 }
