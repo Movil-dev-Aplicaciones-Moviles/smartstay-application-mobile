@@ -4,7 +4,10 @@ data class Hotel(
     val id: Int,
     val hostId: Int,
     val name: String,
-    val location: String,
+    val address: String,
+    val city: String,
+    val country: String,
+    val location: String, // Combined string for display
     val imageUrl: String,
     val description: String?,
     val basePrice: Double,

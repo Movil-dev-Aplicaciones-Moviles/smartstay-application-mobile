@@ -8,11 +8,31 @@ fun HotelDto.toDomain(): Hotel {
         id = this.id ?: 0,
         hostId = this.hostId ?: 0,
         name = this.name ?: "Unknown Hotel",
-        location = this.location ?: "No location provided",
+        address = this.address ?: "",
+        city = this.city ?: "",
+        country = this.country ?: "",
+        location = this.location ?: "${this.address ?: ""}, ${this.city ?: ""}, ${this.country ?: ""}".trim(',',' '),
         imageUrl = this.imageUrl ?: "",
         description = this.description,
         basePrice = this.basePrice ?: 0.0,
         type = this.type ?: "Accommodation",
         amenities = this.amenities ?: emptyList()
+    )
+}
+
+fun Hotel.toDto(): HotelDto {
+    return HotelDto(
+        id = if (id == 0) null else id,
+        hostId = hostId,
+        name = name,
+        address = address,
+        city = city,
+        country = country,
+        location = location,
+        imageUrl = imageUrl,
+        description = description,
+        basePrice = basePrice,
+        type = type,
+        amenities = amenities
     )
 }
