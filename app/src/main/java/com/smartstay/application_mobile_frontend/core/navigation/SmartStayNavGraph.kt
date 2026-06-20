@@ -178,6 +178,13 @@ fun SmartStayNavGraph(navController: NavHostController) {
             HotelListScreen(
                 uiState = uiState,
                 onRefresh = hotelListViewModel::fetchAllHotels,
+                onLogout = {
+                    hotelListViewModel.logout(onSuccess = {
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    })
+                },
                 onNavigateToOptions = {
                     navController.navigate(Routes.ACCOMMODATION_OPTIONS)
                 }
