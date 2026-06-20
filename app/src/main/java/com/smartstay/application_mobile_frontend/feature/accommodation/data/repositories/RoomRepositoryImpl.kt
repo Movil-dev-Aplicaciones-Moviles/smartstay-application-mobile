@@ -14,9 +14,9 @@ class RoomRepositoryImpl @Inject constructor(
     private val apiService: AccommodationApiService
 ) : RoomRepository {
 
-    override suspend fun getRooms(): Result<List<Room>> = withContext(Dispatchers.IO) {
+    override suspend fun getRooms(hotelId: Int?): Result<List<Room>> = withContext(Dispatchers.IO) {
         try {
-            val dtos = apiService.getRooms()
+            val dtos = apiService.getRooms(hotelId)
             Result.success(dtos.map { it.toDomain() })
         } catch (e: Exception) {
             Result.failure(e)

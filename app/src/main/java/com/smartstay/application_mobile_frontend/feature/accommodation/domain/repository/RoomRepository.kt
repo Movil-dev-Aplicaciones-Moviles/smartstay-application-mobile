@@ -4,7 +4,7 @@ import com.smartstay.application_mobile_frontend.feature.accommodation.domain.mo
 import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.RoomType
 
 interface RoomRepository {
-    suspend fun getRooms(): Result<List<Room>>
+    suspend fun getRooms(hotelId: Int? = null): Result<List<Room>>
     suspend fun getRoomById(id: Int): Result<Room>
     suspend fun saveRoom(room: Room): Result<Room>
     suspend fun updateRoom(room: Room): Result<Room>

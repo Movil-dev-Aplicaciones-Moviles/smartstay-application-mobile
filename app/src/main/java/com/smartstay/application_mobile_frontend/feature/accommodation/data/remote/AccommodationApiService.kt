@@ -22,7 +22,7 @@ interface AccommodationApiService {
 
     // --- Rooms ---
     @GET("rooms")
-    suspend fun getRooms(): List<RoomDto>
+    suspend fun getRooms(@Query("hotelId") hotelId: Int? = null): List<RoomDto>
 
     @GET("rooms/{id}")
     suspend fun getRoomById(@Path("id") roomId: Int): RoomDto
