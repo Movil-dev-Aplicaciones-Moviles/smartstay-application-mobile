@@ -344,8 +344,15 @@ fun SmartStayNavGraph(
                 navController = navController,
                 hotelId = hotelId,
                 hotelName = hotelName,
-                onRoomSelected = { roomId ->
-                    // Flow to bookings
+                onRoomSelected = { room ->
+                    navController.navigate(
+                        Routes.paymentCheckout(
+                            hotelId = room.hotelId,
+                            roomId = room.id,
+                            amount = room.price,
+                            hotelName = hotelName
+                        )
+                    )
                 }
             )
         }

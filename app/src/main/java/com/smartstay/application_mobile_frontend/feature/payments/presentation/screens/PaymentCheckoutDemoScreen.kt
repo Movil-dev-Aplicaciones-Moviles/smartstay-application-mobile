@@ -11,6 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +62,8 @@ fun PaymentCheckoutDemoScreen(
         uiState = uiState,
         onBack = onBack,
         onCreateCheckout = viewModel::createMercadoPagoCheckout,
+        onDecreaseNights = viewModel::decreaseNights,
+        onIncreaseNights = viewModel::increaseNights,
         onOpenCheckout = uriHandler::openUri,
         modifier = modifier
     )
@@ -69,6 +74,8 @@ private fun PaymentCheckoutContent(
     uiState: PaymentCheckoutUiState,
     onBack: () -> Unit,
     onCreateCheckout: () -> Unit,
+    onDecreaseNights: () -> Unit,
+    onIncreaseNights: () -> Unit,
     onOpenCheckout: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -99,7 +106,12 @@ private fun PaymentCheckoutContent(
                 )
             }
 
-            BookingSummaryCard(uiState = uiState)
+            BookingSummaryCard(
+                uiState = uiState,
+                onDecreaseNights = onDecreaseNights,
+                onIncreaseNights = onIncreaseNights,
+                canEditNights = uiState.checkoutUrl == null && !uiState.isLoading
+            )
 
             uiState.checkoutUrl?.let { checkoutUrl ->
                 MercadoPagoCheckoutCard(
@@ -139,7 +151,12 @@ private fun PaymentCheckoutContent(
 }
 
 @Composable
-private fun BookingSummaryCard(uiState: PaymentCheckoutUiState) {
+private fun BookingSummaryCard(
+    uiState: PaymentCheckoutUiState,
+    onDecreaseNights: () -> Unit,
+    onIncreaseNights: () -> Unit,
+    canEditNights: Boolean
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -154,9 +171,35 @@ private fun BookingSummaryCard(uiState: PaymentCheckoutUiState) {
                 fontWeight = FontWeight.SemiBold
             )
             Text(text = "Numero de habitacion: ${uiState.roomId ?: "-"}")
-            Text(text = "Cantidad de noches: ${uiState.nights}")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Cantidad de noches: ${uiState.nights}")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onDecreaseNights,
+                        enabled = canEditNights && uiState.nights > 1
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = "Reducir noches"
+                        )
+                    }
+                    IconButton(
+                        onClick = onIncreaseNights,
+                        enabled = canEditNights && uiState.nights < 30
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Aumentar noches"
+                        )
+                    }
+                }
+            }
             Text(
-                text = "Monto total: ${uiState.currency} ${"%.2f".format(uiState.amount)}",
+                text = "Monto total: ${uiState.currency} ${"%.2f".format(uiState.totalAmount)}",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )

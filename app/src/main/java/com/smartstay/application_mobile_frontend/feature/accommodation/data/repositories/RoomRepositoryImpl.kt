@@ -17,7 +17,10 @@ class RoomRepositoryImpl @Inject constructor(
     override suspend fun getRooms(hotelId: Int?): Result<List<Room>> = withContext(Dispatchers.IO) {
         try {
             val dtos = apiService.getRooms(hotelId)
-            Result.success(dtos.map { it.toDomain() })
+            val rooms = dtos.map { it.toDomain() }
+            Result.success(
+                hotelId?.let { id -> rooms.filter { it.hotelId == id } } ?: rooms
+            )
         } catch (e: Exception) {
             Result.failure(e)
         }

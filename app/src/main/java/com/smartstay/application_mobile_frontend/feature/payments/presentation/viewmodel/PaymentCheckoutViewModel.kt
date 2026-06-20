@@ -26,14 +26,17 @@ data class PaymentCheckoutUiState(
     val roomTypeName: String? = null,
     val roomDescription: String? = null,
     val nights: Int = 2,
-    val amount: Double = 250.00,
+    val pricePerNight: Double = 250.00,
     val currency: String = "PEN",
     val selectedMethod: PaymentMethod = PaymentMethod.MERCADO_PAGO,
     val checkoutUrl: String? = null,
     val isLoadingDetails: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
-)
+) {
+    val totalAmount: Double
+        get() = pricePerNight * nights
+}
 
 @HiltViewModel
 class PaymentCheckoutViewModel @Inject constructor(
@@ -56,7 +59,7 @@ class PaymentCheckoutViewModel @Inject constructor(
                 bookingId = bookingId,
                 hotelId = hotelId,
                 roomId = roomId,
-                amount = amount ?: it.amount,
+                pricePerNight = amount ?: it.pricePerNight,
                 hotelName = hotelName?.ifBlank { null } ?: it.hotelName,
                 checkoutUrl = null,
                 errorMessage = null
@@ -81,7 +84,7 @@ class PaymentCheckoutViewModel @Inject constructor(
                         hotelId = room.hotelId,
                         roomTypeName = room.roomTypeName,
                         roomDescription = room.description,
-                        amount = room.price
+                        pricePerNight = room.price
                     )
                 }
             }?.onFailure { error ->
@@ -98,10 +101,10 @@ class PaymentCheckoutViewModel @Inject constructor(
                                 hotelId = hotel.id,
                                 hotelName = hotel.name,
                                 hotelLocation = hotel.location,
-                                amount = if (roomResult == null && amount == null) {
-                                    hotel.basePrice ?: it.amount
+                                pricePerNight = if (roomResult == null && amount == null) {
+                                    hotel.basePrice ?: it.pricePerNight
                                 } else {
-                                    it.amount
+                                    it.pricePerNight
                                 }
                             )
                         }
@@ -145,14 +148,14 @@ class PaymentCheckoutViewModel @Inject constructor(
             }
 
             val state = _uiState.value
-            val returnQuery = "bookingId=${state.bookingId ?: -1}&amount=${state.amount}"
+            val returnQuery = "bookingId=${state.bookingId ?: -1}&amount=${state.totalAmount}"
             val request = MercadoPagoPreferenceRequestDto(
                 items = listOf(
                     MercadoPagoPreferenceItemDto(
                         title = buildPreferenceTitle(state),
                         quantity = 1,
                         currencyId = state.currency,
-                        unitPrice = state.amount
+                        unitPrice = state.totalAmount
                     )
                 ),
                 externalReference = buildExternalReference(state),
@@ -195,6 +198,26 @@ class PaymentCheckoutViewModel @Inject constructor(
     fun resetCheckout() {
         _uiState.update {
             it.copy(
+                checkoutUrl = null,
+                errorMessage = null
+            )
+        }
+    }
+
+    fun increaseNights() {
+        _uiState.update {
+            it.copy(
+                nights = (it.nights + 1).coerceAtMost(30),
+                checkoutUrl = null,
+                errorMessage = null
+            )
+        }
+    }
+
+    fun decreaseNights() {
+        _uiState.update {
+            it.copy(
+                nights = (it.nights - 1).coerceAtLeast(1),
                 checkoutUrl = null,
                 errorMessage = null
             )

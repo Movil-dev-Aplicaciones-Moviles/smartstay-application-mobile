@@ -28,7 +28,7 @@ fun RoomListScreen(
     navController: NavHostController,
     hotelId: Int,
     hotelName: String?,
-    onRoomSelected: (Int) -> Unit,
+    onRoomSelected: (Room) -> Unit,
     viewModel: RoomListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -81,7 +81,7 @@ fun RoomListScreen(
                     items(uiState.rooms, key = { it.id }) { room ->
                         RoomCard(
                             room = room,
-                            onBookClick = { onRoomSelected(room.id) }
+                            onBookClick = { onRoomSelected(room) }
                         )
                     }
                 }

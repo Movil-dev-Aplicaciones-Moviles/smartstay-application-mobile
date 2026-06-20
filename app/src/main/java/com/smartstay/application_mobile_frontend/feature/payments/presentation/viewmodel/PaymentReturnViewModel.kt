@@ -34,7 +34,7 @@ class PaymentReturnViewModel @Inject constructor(
                 it.copy(
                     isRegisteringPayment = false,
                     backendMessage = null,
-                    backendError = "Pago aprobado, pero no hay bookingId y monto para registrar en backend."
+                    backendError = null
                 )
             }
             return
