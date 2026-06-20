@@ -2,7 +2,7 @@ package com.smartstay.application_mobile_frontend.feature.payments.presentation.
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-//import com.smartstay.application_mobile_frontend.BuildConfig
+import com.smartstay.application_mobile_frontend.BuildConfig
 import com.smartstay.application_mobile_frontend.feature.payments.data.remote.MercadoPagoApiService
 import com.smartstay.application_mobile_frontend.feature.payments.data.remote.PaymentCheckoutDetailsApiService
 import com.smartstay.application_mobile_frontend.feature.payments.data.remote.dto.MercadoPagoBackUrlsDto

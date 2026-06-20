@@ -65,6 +65,7 @@ object Routes {
     const val ACCOMMODATION_OPTIONS = "accommodation_options"
 
     const val DASHBOARD = "dashboard"
+    const val MAIN = "main"
 
     /** Construye la ruta concreta para el detalle de usuario dado su [userId]. */
     fun userDetail(userId: Int): String = "user_detail/$userId"
@@ -142,21 +143,7 @@ fun SmartStayNavGraph(navController: NavHostController) {
 
     val startDestination: String = remember {
         val hasToken = runBlocking { tokenManager.getToken() != null }
-        val role = runBlocking { tokenManager.getRole() } ?: ""
-        val currentUserId = runBlocking { tokenManager.getUserId() } ?: 0
-
-        if (hasToken) {
-            val permissions = UserPermissions(role)
-            if (permissions.canManageUsers) {
-                Routes.USER_LIST
-            } else if (role.lowercase() == "guest" || role.lowercase() == "host") {
-                Routes.DASHBOARD
-            } else {
-                Routes.profileDetail(currentUserId)
-            }
-        } else {
-            Routes.LOGIN
-        }
+        if (hasToken) Routes.MAIN else Routes.LOGIN
     }
 
     NavHost(
@@ -168,7 +155,19 @@ fun SmartStayNavGraph(navController: NavHostController) {
             LoginScreen(navController = navController)
         }
 
-        // ---- Lista Operacional de Personal ----
+        // ---- CONTENEDOR PRINCIPAL CON TABS ----
+        composable(route = Routes.MAIN) {
+            val role = remember { runBlocking { tokenManager.getRole() } ?: "" }
+            val currentUserId = remember { runBlocking { tokenManager.getUserId() } ?: 0 }
+
+            MainScreen(
+                rootNavController = navController,
+                role = role,
+                currentUserId = currentUserId
+            )
+        }
+
+        // ---- Lista Operacional de Personal (Mantenida para navegación directa si fuera necesario) ----
         composable(route = Routes.USER_LIST) {
             UserListScreen(navController = navController)
         }
