@@ -30,6 +30,7 @@ sealed class TabItem(val route: String, val label: String, val icon: ImageVector
     object Personnel : TabItem(Routes.USER_LIST, "Personal", Icons.Default.People)
     object EmployeeProfiles : TabItem(Routes.PROFILE_LIST, "Fichas", Icons.Default.Badge)
     object Explore : TabItem(Routes.DASHBOARD, "Explorar", Icons.Default.Explore)
+    object Management : TabItem(Routes.DASHBOARD, "Gestión", Icons.Default.Explore)
     object MyProfile : TabItem("my_profile_tab", "Perfil", Icons.Default.Person)
 }
 
@@ -40,11 +41,12 @@ fun MainScreen(
     currentUserId: Int
 ) {
     val navController = rememberNavController()
-    val permissions = remember(role) { UserPermissions(role) }
+    val userRole = role.lowercase().trim()
+    val permissions = remember(userRole) { UserPermissions(userRole) }
 
-    val tabs = remember(role) {
+    val tabs = remember(userRole) {
         if (permissions.canManageUsers) {
-            listOf(TabItem.Personnel, TabItem.EmployeeProfiles, TabItem.MyProfile)
+            listOf(TabItem.Personnel, TabItem.EmployeeProfiles, TabItem.Management, TabItem.MyProfile)
         } else {
             listOf(TabItem.Explore, TabItem.MyProfile)
         }
@@ -91,6 +93,7 @@ fun MainScreen(
                 val uiState by hotelListViewModel.uiState.collectAsState()
                 HotelListScreen(
                     uiState = uiState,
+                    role = userRole,
                     onRefresh = hotelListViewModel::fetchAllHotels,
                     onLogout = {
                         hotelListViewModel.logout(onSuccess = {
@@ -100,7 +103,16 @@ fun MainScreen(
                         })
                     },
                     onHotelSelected = { hotelId ->
-                        // Reservado para flujo de Bookings: rootNavController.navigate("booking/$hotelId")
+                        // rootNavController.navigate("rooms/$hotelId")
+                    },
+                    onEditHotelSelected = { hotelId ->
+                        // rootNavController.navigate("edit_hotel/$hotelId")
+                    },
+                    onAddHotel = {
+                        rootNavController.navigate(Routes.ADD_HOTEL)
+                    },
+                    onAddRoom = { hotelId ->
+                        rootNavController.navigate("add_room/$hotelId")
                     },
                     onNavigateToOptions = {
                         rootNavController.navigate(Routes.ACCOMMODATION_OPTIONS)
