@@ -21,6 +21,8 @@ import com.smartstay.application_mobile_frontend.feature.iam.presentation.editus
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.login.LoginScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userdetail.UserDetailScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userlist.UserListScreen
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.screens.PaymentCheckoutDemoScreen
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.viewmodel.PaymentCheckoutViewModel
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.create.CreateProfileScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.detail.ProfileDetailScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.list.ProfileListScreen
@@ -56,6 +58,9 @@ object Routes {
     const val PROFILE_LIST = "profile_list"
     const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
+    const val PAYMENT_DEMO = "payments/demo"
+    const val PAYMENT_CHECKOUT =
+        "payments/checkout?bookingId={bookingId}&hotelId={hotelId}&roomId={roomId}&amount={amount}&hotelName={hotelName}"
 
     const val ACCOMMODATION_OPTIONS = "accommodation_options"
 
@@ -69,6 +74,22 @@ object Routes {
     fun profileDetail(profileId: Int): String = "profile_detail/$profileId"
 
     fun createProfile(email: String): String = "create_profile/$email"
+
+    fun paymentCheckout(
+        bookingId: Int? = null,
+        hotelId: Int? = null,
+        roomId: Int? = null,
+        amount: Double? = null,
+        hotelName: String? = null
+    ): String {
+        val encodedHotelName = hotelName.orEmpty().replace(" ", "%20")
+        return "payments/checkout" +
+            "?bookingId=${bookingId ?: -1}" +
+            "&hotelId=${hotelId ?: -1}" +
+            "&roomId=${roomId ?: -1}" +
+            "&amount=${amount ?: -1.0}" +
+            "&hotelName=$encodedHotelName"
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -79,7 +100,11 @@ object Routes {
 object NavArgs {
     const val USER_ID = "userId"
     const val PROFILE_ID = "profileId"
-
+    const val BOOKING_ID = "bookingId"
+    const val HOTEL_ID = "hotelId"
+    const val ROOM_ID = "roomId"
+    const val AMOUNT = "amount"
+    const val HOTEL_NAME = "hotelName"
 }
 
 // ---------------------------------------------------------------------------
@@ -106,7 +131,6 @@ interface SmartStayNavGraphEntryPoint {
 @Composable
 fun SmartStayNavGraph(navController: NavHostController) {
     val context = LocalContext.current
-
 
     // Acceso síncrono al EntryPoint de inyección para TokenManager
     val tokenManager: TokenManager = remember {
@@ -168,8 +192,6 @@ fun SmartStayNavGraph(navController: NavHostController) {
                 userId = userId,
                 actorRole = actorRole
             )
-
-
         }
         composable(route = Routes.DASHBOARD) {
             val hotelListViewModel: HotelListViewModel = hiltViewModel()
@@ -219,6 +241,7 @@ fun SmartStayNavGraph(navController: NavHostController) {
         composable(route = Routes.PROFILE_LIST) {
             ProfileListScreen(navController = navController)
         }
+
         composable(
             route = Routes.CREATE_PROFILE,
             arguments = listOf(navArgument("userEmail") { type = NavType.StringType })
@@ -237,5 +260,64 @@ fun SmartStayNavGraph(navController: NavHostController) {
                 profileId = profileId
             )
         }
+
+        composable(route = Routes.PAYMENT_DEMO) {
+            val paymentCheckoutViewModel: PaymentCheckoutViewModel = hiltViewModel()
+
+            PaymentCheckoutDemoScreen(
+                viewModel = paymentCheckoutViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Routes.PAYMENT_CHECKOUT,
+            arguments = listOf(
+                navArgument(NavArgs.BOOKING_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.HOTEL_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.ROOM_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.AMOUNT) {
+                    type = NavType.FloatType
+                    defaultValue = -1f
+                },
+                navArgument(NavArgs.HOTEL_NAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val paymentCheckoutViewModel: PaymentCheckoutViewModel = hiltViewModel()
+            val bookingId = backStackEntry.arguments?.getInt(NavArgs.BOOKING_ID).toNullableId()
+            val hotelId = backStackEntry.arguments?.getInt(NavArgs.HOTEL_ID).toNullableId()
+            val roomId = backStackEntry.arguments?.getInt(NavArgs.ROOM_ID).toNullableId()
+            val amount = backStackEntry.arguments
+                ?.getFloat(NavArgs.AMOUNT)
+                ?.takeIf { it >= 0f }
+                ?.toDouble()
+            val hotelName = backStackEntry.arguments
+                ?.getString(NavArgs.HOTEL_NAME)
+                ?.takeIf { it.isNotBlank() }
+
+            PaymentCheckoutDemoScreen(
+                viewModel = paymentCheckoutViewModel,
+                onBack = { navController.popBackStack() },
+                bookingId = bookingId,
+                hotelId = hotelId,
+                roomId = roomId,
+                amount = amount,
+                hotelName = hotelName
+            )
+        }
     }
 }
+
+private fun Int?.toNullableId(): Int? = this?.takeIf { it > 0 }

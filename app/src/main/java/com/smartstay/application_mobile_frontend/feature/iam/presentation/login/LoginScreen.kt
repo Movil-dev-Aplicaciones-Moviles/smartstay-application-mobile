@@ -202,6 +202,18 @@ fun LoginScreen(
                     Text(stringResource(R.string.login_sign_in_button))
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { navController.navigate(Routes.PAYMENT_DEMO) },
+                enabled = uiState !is LoginUiState.Loading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("Ver demo de pagos")
+            }
         }
     }
 }
