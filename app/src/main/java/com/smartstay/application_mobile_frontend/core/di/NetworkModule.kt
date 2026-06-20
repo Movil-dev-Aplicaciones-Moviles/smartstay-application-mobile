@@ -2,7 +2,6 @@
 package com.smartstay.application_mobile_frontend.core.di
 
 import com.smartstay.application_mobile_frontend.core.network.AuthInterceptor
-import com.smartstay.application_mobile_frontend.feature.accommodation.data.remote.AccommodationApiService
 import com.smartstay.application_mobile_frontend.feature.options.data.remote.OptionsApiService
 import dagger.Module
 import dagger.Provides
@@ -51,12 +50,6 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideAccommodationApiService(retrofit: Retrofit): AccommodationApiService {
-        return retrofit.create(AccommodationApiService::class.java)
     }
 
     @Provides
