@@ -99,6 +99,9 @@ fun MainScreen(
                             }
                         })
                     },
+                    onHotelSelected = { hotelId ->
+                        // Reservado para flujo de Bookings: rootNavController.navigate("booking/$hotelId")
+                    },
                     onNavigateToOptions = {
                         rootNavController.navigate(Routes.ACCOMMODATION_OPTIONS)
                     }
