@@ -12,7 +12,6 @@ data class HotelDto(
     @SerializedName("country") val country: String?,
     @SerializedName("imageUrl") val imageUrl: String?,
     @SerializedName("description") val description: String?,
-    @SerializedName("basePrice") val basePrice: Double?,
     @SerializedName("type") val type: String?,
     @SerializedName("amenities") val amenities: List<String>?
 )

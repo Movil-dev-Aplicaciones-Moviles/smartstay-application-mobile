@@ -6,6 +6,7 @@ data class RoomDto(
     @SerializedName("id") val id: Int?,
     @SerializedName("hotelId") val hotelId: Int?,
     @SerializedName("roomTypeId") val roomTypeId: Int?,
+    @SerializedName("roomTypeName") val roomTypeName: String?,
     @SerializedName("price") val price: Double?,
     @SerializedName("description") val description: String?,
     @SerializedName("amenities") val amenities: List<String>?,

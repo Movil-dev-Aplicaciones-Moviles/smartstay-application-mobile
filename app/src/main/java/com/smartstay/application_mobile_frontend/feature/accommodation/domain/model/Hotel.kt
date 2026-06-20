@@ -10,7 +10,6 @@ data class Hotel(
     val location: String, // Combined string for display
     val imageUrl: String,
     val description: String?,
-    val basePrice: Double,
     val type: String,
     val amenities: List<String>
 )

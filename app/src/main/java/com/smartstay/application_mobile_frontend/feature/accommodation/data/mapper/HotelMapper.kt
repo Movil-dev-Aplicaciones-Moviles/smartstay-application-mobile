@@ -14,7 +14,6 @@ fun HotelDto.toDomain(): Hotel {
         location = this.location ?: "${this.address ?: ""}, ${this.city ?: ""}, ${this.country ?: ""}".trim(',',' '),
         imageUrl = this.imageUrl ?: "",
         description = this.description,
-        basePrice = this.basePrice ?: 0.0,
         type = this.type ?: "Accommodation",
         amenities = this.amenities ?: emptyList()
     )
@@ -31,7 +30,6 @@ fun Hotel.toDto(): HotelDto {
         location = location,
         imageUrl = imageUrl,
         description = description,
-        basePrice = basePrice,
         type = type,
         amenities = amenities
     )
