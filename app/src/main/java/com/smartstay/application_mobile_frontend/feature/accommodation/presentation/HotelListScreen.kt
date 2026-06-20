@@ -5,27 +5,35 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.Hotel
+import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
 import com.smartstay.application_mobile_frontend.ui.theme.ApplicationmobilefrontendTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HotelListScreen(
     uiState: HotelListUiState,
+    role: String,
     onRefresh: () -> Unit,
     onLogout: () -> Unit,
     onHotelSelected: (Int) -> Unit,
+    onEditHotelSelected: (Int) -> Unit,
+    onAddHotel: () -> Unit,
+    onAddRoom: (Int) -> Unit,
     onNavigateToOptions: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val permissions = remember(role) { UserPermissions(role) }
     LaunchedEffect(Unit) {
         onRefresh()
     }
@@ -50,12 +58,20 @@ fun HotelListScreen(
             )
         },
         floatingActionButton = {
-            if (!uiState.isLoading) {
-                FloatingActionButton(onClick = onNavigateToOptions) {
-                    Text(
-                        text = "Ver Opciones",
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (permissions.canManageProperties) {
+                    FloatingActionButton(onClick = onAddHotel) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir Hotel")
+                    }
+                }
+
+                if (!uiState.isLoading) {
+                    FloatingActionButton(onClick = onNavigateToOptions) {
+                        Text(
+                            text = "Ver Opciones",
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
                 }
             }
         }
@@ -126,7 +142,10 @@ fun HotelListScreen(
                     items(uiState.hotels, key = { it.id }) { hotel ->
                         HotelCard(
                             hotel = hotel,
-                            onHotelClick = { onHotelSelected(it.id) }
+                            onHotelClick = { onHotelSelected(hotel.id) },
+                            onEditClick = { onEditHotelSelected(hotel.id) },
+                            onAddRoomClick = { onAddRoom(hotel.id) },
+                            canManageProperties = permissions.canManageProperties
                         )
                     }
                 }
@@ -152,15 +171,18 @@ private fun HotelListScreenPreview() {
                         location = "Jr. de la Unión 958, Lima, Peru",
                         imageUrl = "https://placehold.co/600x400/3498DB/FFFFFF?text=Bolivar",
                         description = "Historic hotel in the center of Lima.",
-                        basePrice = 85.0,
                         type = "Hotel",
                         amenities = listOf("Wifi", "Restaurante", "Bar")
                     )
                 )
             ),
+            role = "admin",
             onRefresh = {},
             onLogout = {},
             onHotelSelected = {},
+            onEditHotelSelected = {},
+            onAddHotel = {},
+            onAddRoom = {},
             onNavigateToOptions = {}
         )
     }

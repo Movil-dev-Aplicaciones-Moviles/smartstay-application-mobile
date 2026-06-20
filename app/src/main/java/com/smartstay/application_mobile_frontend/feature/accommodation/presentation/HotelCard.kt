@@ -2,7 +2,9 @@ package com.smartstay.application_mobile_frontend.feature.accommodation.presenta
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,11 +24,14 @@ import com.smartstay.application_mobile_frontend.feature.accommodation.domain.mo
 @Composable
 fun HotelCard(
     hotel: Hotel,
-    onHotelClick: (Hotel) -> Unit,
+    onHotelClick: (Int) -> Unit,
+    onEditClick: (Int) -> Unit,
+    onAddRoomClick: (Int) -> Unit,
+    canManageProperties: Boolean,
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { onHotelClick(hotel) },
+        onClick = { onHotelClick(hotel.id) },
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -46,18 +51,64 @@ fun HotelCard(
                     contentScale = ContentScale.Crop
                 )
                 
-                // Tipo de alojamiento (Badge)
+                // Row for Management Buttons
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (canManageProperties) {
+                        // Edit Button
+                        IconButton(
+                            onClick = { onEditClick(hotel.id) },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Editar Hotel",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        // Add Room Button
+                        IconButton(
+                            onClick = { onAddRoomClick(hotel.id) },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddBusiness,
+                                contentDescription = "Añadir Habitación",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Type of accommodation (Badge)
                 Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
                     shape = MaterialTheme.shapes.small,
                     modifier = Modifier
                         .padding(12.dp)
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.BottomStart)
                 ) {
                     Text(
                         text = hotel.type,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -117,30 +168,24 @@ fun HotelCard(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Action Indicator (Ver habitaciones)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "Precio base",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                        Text(
-                            text = "S/ ${"%.2f".format(hotel.basePrice)}",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
                     Text(
-                        text = "por noche",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        text = "Ver habitaciones",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
