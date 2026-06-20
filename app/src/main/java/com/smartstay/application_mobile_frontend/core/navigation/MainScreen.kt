@@ -103,10 +103,10 @@ fun MainScreen(
                         })
                     },
                     onHotelSelected = { hotelId ->
-                        // rootNavController.navigate("rooms/$hotelId")
+                        rootNavController.navigate("room_list/$hotelId")
                     },
                     onEditHotelSelected = { hotelId ->
-                        // rootNavController.navigate("edit_hotel/$hotelId")
+                        rootNavController.navigate("edit_hotel/$hotelId")
                     },
                     onAddHotel = {
                         rootNavController.navigate(Routes.ADD_HOTEL)

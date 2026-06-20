@@ -27,7 +27,9 @@ import com.smartstay.application_mobile_frontend.feature.profile.presentation.cr
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.detail.ProfileDetailScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.list.ProfileListScreen
 import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.AddHotelScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.EditHotelScreen
 import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.AddRoomScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.RoomListScreen
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -61,7 +63,9 @@ object Routes {
     const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
     const val ADD_HOTEL = "add_hotel"
+    const val EDIT_HOTEL = "edit_hotel/{hotelId}"
     const val ADD_ROOM = "add_room/{hotelId}"
+    const val ROOM_LIST = "room_list/{hotelId}?hotelName={hotelName}"
     const val PAYMENT_DEMO = "payments/demo"
     const val PAYMENT_CHECKOUT =
         "payments/checkout?bookingId={bookingId}&hotelId={hotelId}&roomId={roomId}&amount={amount}&hotelName={hotelName}"
@@ -213,10 +217,10 @@ fun SmartStayNavGraph(navController: NavHostController) {
                     })
                 },
                 onHotelSelected = { hotelId ->
-                    // navController.navigate("rooms/$hotelId")
+                    navController.navigate("room_list/$hotelId")
                 },
                 onEditHotelSelected = { hotelId ->
-                    // navController.navigate("edit_hotel/$hotelId")
+                    navController.navigate("edit_hotel/$hotelId")
                 },
                 onAddHotel = {
                     navController.navigate(Routes.ADD_HOTEL)
@@ -283,11 +287,38 @@ fun SmartStayNavGraph(navController: NavHostController) {
         }
 
         composable(
+            route = Routes.EDIT_HOTEL,
+            arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            EditHotelScreen(navController = navController, hotelId = hotelId)
+        }
+
+        composable(
             route = Routes.ADD_ROOM,
             arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
         ) { backStackEntry ->
             val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
             AddRoomScreen(navController = navController, hotelId = hotelId)
+        }
+
+        composable(
+            route = Routes.ROOM_LIST,
+            arguments = listOf(
+                navArgument("hotelId") { type = NavType.IntType },
+                navArgument("hotelName") { type = NavType.StringType; nullable = true }
+            )
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            val hotelName = backStackEntry.arguments?.getString("hotelName")
+            RoomListScreen(
+                navController = navController,
+                hotelId = hotelId,
+                hotelName = hotelName,
+                onRoomSelected = { roomId ->
+                    // Flow to bookings
+                }
+            )
         }
 
         composable(route = Routes.PAYMENT_DEMO) {
