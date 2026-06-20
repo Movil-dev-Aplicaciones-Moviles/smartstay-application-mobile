@@ -2,6 +2,7 @@ package com.smartstay.application_mobile_frontend.feature.accommodation.presenta
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smartstay.application_mobile_frontend.core.datastore.TokenManager
 import com.smartstay.application_mobile_frontend.feature.accommodation.domain.model.Hotel
 import com.smartstay.application_mobile_frontend.feature.accommodation.domain.usecase.GetHotelsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,8 @@ data class HotelListUiState(
 
 @HiltViewModel
 class HotelListViewModel @Inject constructor(
-    private val getHotelsUseCase: GetHotelsUseCase
+    private val getHotelsUseCase: GetHotelsUseCase,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HotelListUiState())
@@ -29,6 +31,17 @@ class HotelListViewModel @Inject constructor(
 
     init {
         fetchAllHotels()
+    }
+
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                tokenManager.clearSession()
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(errorMessage = "Error al cerrar sesión")
+            }
+        }
     }
 
     fun fetchAllHotels() {

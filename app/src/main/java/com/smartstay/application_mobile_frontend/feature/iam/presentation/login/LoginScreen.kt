@@ -70,17 +70,7 @@ fun LoginScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
-            val userRole = (uiState as LoginUiState.Success).authenticatedUser.user.role.lowercase()
-            val permissions = UserPermissions(userRole)
-
-            val destination = if (permissions.canManageUsers) {
-                Routes.USER_LIST
-            } else {
-                // Al loguearse, el backend ya retorna su id de usuario/perfil
-                Routes.profileDetail((uiState as LoginUiState.Success).authenticatedUser.user.id)
-            }
-
-            navController.navigate(destination) {
+            navController.navigate(Routes.MAIN) {
                 popUpTo(Routes.LOGIN) { inclusive = true }
             }
         }

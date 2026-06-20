@@ -2,7 +2,9 @@ package com.smartstay.application_mobile_frontend.feature.accommodation.data.di
 
 import com.smartstay.application_mobile_frontend.feature.accommodation.data.remote.AccommodationApiService
 import com.smartstay.application_mobile_frontend.feature.accommodation.data.repositories.HotelRepositoryImpl
+import com.smartstay.application_mobile_frontend.feature.accommodation.data.repositories.RoomRepositoryImpl
 import com.smartstay.application_mobile_frontend.feature.accommodation.domain.repository.HotelRepository
+import com.smartstay.application_mobile_frontend.feature.accommodation.domain.repository.RoomRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -20,6 +22,12 @@ abstract class AccommodationBindingsModule {
     abstract fun bindHotelRepository(
         implementation: HotelRepositoryImpl
     ): HotelRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRoomRepository(
+        implementation: RoomRepositoryImpl
+    ): RoomRepository
 
     // REMOVED the extra @Module and @InstallIn from here
     companion object {

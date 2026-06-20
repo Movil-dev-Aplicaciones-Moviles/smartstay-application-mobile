@@ -1,15 +1,17 @@
 package com.smartstay.application_mobile_frontend.feature.accommodation.data.remote.dto
 
-data class HotelDto(
-    val id: Int,
-    val hostId: Int,
-    val name: String,
-    val address: String,
-    val city: String,
-    val country: String,
-    val imageUrl: String,
-    val description: String,
-    val type: String,
-    val amenities: List<String>
-)
+import com.google.gson.annotations.SerializedName
 
+data class HotelDto(
+    @SerializedName("id") val id: Int?,
+    @SerializedName("hostId") val hostId: Int?,
+    @SerializedName("name") val name: String?,
+    @SerializedName("address") val address: String?, // Usado en POST/PUT
+    @SerializedName("location") val location: String?, // Usado en GET
+    @SerializedName("city") val city: String?,
+    @SerializedName("country") val country: String?,
+    @SerializedName("imageUrl") val imageUrl: String?,
+    @SerializedName("description") val description: String?,
+    @SerializedName("type") val type: String?,
+    @SerializedName("amenities") val amenities: List<String>?
+)

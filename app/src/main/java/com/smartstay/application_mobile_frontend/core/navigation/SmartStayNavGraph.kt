@@ -1,7 +1,10 @@
+// core/navigation/SmartStayNavGraph.kt
 package com.smartstay.application_mobile_frontend.core.navigation
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,12 +29,32 @@ import com.smartstay.application_mobile_frontend.feature.payments.presentation.v
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.create.CreateProfileScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.detail.ProfileDetailScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.list.ProfileListScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.AddHotelScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.EditHotelScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.AddRoomScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.RoomListScreen
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
+import androidx.navigation.compose.rememberNavController
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListScreen
 
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
+//import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
+//import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
+//import com.smartstay.application_mobile_frontend.feature.options.presentation.HotelListScreen
+import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsScreen
+import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsViewModel
+
+// ---------------------------------------------------------------------------
+//  Constantes de rutas del módulo IAM (Operacional y Administrativo)
+// ---------------------------------------------------------------------------
+
+/**
+ * Aloja todas las rutas de navegación reales y estancas del módulo IAM.
+ */
 object Routes {
     const val LOGIN = "login"
     const val USER_LIST = "user_list"
@@ -43,11 +66,22 @@ object Routes {
     const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
     const val PAYMENT_RETURN = "payments/return/{status}?bookingId={bookingId}&amount={amount}"
+    const val ADD_HOTEL = "add_hotel"
+    const val EDIT_HOTEL = "edit_hotel/{hotelId}"
+    const val ADD_ROOM = "add_room/{hotelId}"
+    const val ROOM_LIST = "room_list/{hotelId}?hotelName={hotelName}"
     const val PAYMENT_CHECKOUT =
         "payments/checkout?bookingId={bookingId}&hotelId={hotelId}&roomId={roomId}&amount={amount}&hotelName={hotelName}"
 
+    const val ACCOMMODATION_OPTIONS = "accommodation_options"
+
+    const val DASHBOARD = "dashboard"
+    const val MAIN = "main"
+
+    /** Construye la ruta concreta para el detalle de usuario dado su [userId]. */
     fun userDetail(userId: Int): String = "user_detail/$userId"
 
+    /** Construye la ruta concreta para la edición parcial de un usuario dado su [userId]. */
     fun editUser(userId: Int): String = "edit_user/$userId"
     fun profileDetail(profileId: Int): String = "profile_detail/$profileId"
 
@@ -76,6 +110,11 @@ object Routes {
     }
 }
 
+// ---------------------------------------------------------------------------
+//  Nombres de argumentos de navegación
+// ---------------------------------------------------------------------------
+
+
 object NavArgs {
     const val USER_ID = "userId"
     const val PROFILE_ID = "profileId"
@@ -87,12 +126,27 @@ object NavArgs {
     const val PAYMENT_STATUS = "status"
 }
 
+// ---------------------------------------------------------------------------
+//  EntryPoint para acceso a TokenManager desde el grafo
+// ---------------------------------------------------------------------------
+
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface SmartStayNavGraphEntryPoint {
     val tokenManager: TokenManager
 }
 
+// ---------------------------------------------------------------------------
+//  Grafo de navegación principal - SmartStay Operacional
+// ---------------------------------------------------------------------------
+
+/**
+ * Grafo de navegación principal de la aplicación administrativa interna.
+ *
+ * Decide el destino inicial según la existencia de una sesión persistida:
+ * - Si hay token → Redirección directa a la zona de trabajo: [Routes.USER_LIST]
+ * - Si no hay token → [Routes.LOGIN]
+ */
 @Composable
 fun SmartStayNavGraph(
     navController: NavHostController,
@@ -101,6 +155,7 @@ fun SmartStayNavGraph(
 ) {
     val context = LocalContext.current
 
+    // Acceso síncrono al EntryPoint de inyección para TokenManager
     val tokenManager: TokenManager = remember {
         EntryPointAccessors.fromApplication(
             context.applicationContext,
@@ -110,19 +165,7 @@ fun SmartStayNavGraph(
 
     val startDestination: String = remember {
         val hasToken = runBlocking { tokenManager.getToken() != null }
-        val role = runBlocking { tokenManager.getRole() } ?: ""
-        val currentUserId = runBlocking { tokenManager.getUserId() } ?: 0
-
-        if (hasToken) {
-            val permissions = UserPermissions(role)
-            if (permissions.canManageUsers) {
-                Routes.USER_LIST
-            } else {
-                Routes.profileDetail(currentUserId)
-            }
-        } else {
-            Routes.LOGIN
-        }
+        if (hasToken) Routes.MAIN else Routes.LOGIN
     }
 
     LaunchedEffect(paymentReturnData) {
@@ -144,18 +187,34 @@ fun SmartStayNavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+        // ---- Login ----
         composable(route = Routes.LOGIN) {
             LoginScreen(navController = navController)
         }
 
+        // ---- CONTENEDOR PRINCIPAL CON TABS ----
+        composable(route = Routes.MAIN) {
+            val role = remember { runBlocking { tokenManager.getRole() } ?: "" }
+            val currentUserId = remember { runBlocking { tokenManager.getUserId() } ?: 0 }
+
+            MainScreen(
+                rootNavController = navController,
+                role = role,
+                currentUserId = currentUserId
+            )
+        }
+
+        // ---- Lista Operacional de Personal (Mantenida para navegación directa si fuera necesario) ----
         composable(route = Routes.USER_LIST) {
             UserListScreen(navController = navController)
         }
 
+        // ---- Formulario Administrativo: Registro de Personal ----
         composable(route = Routes.CREATE_USER) {
             CreateUserScreen(navController = navController)
         }
 
+        // ---- Detalle de Identidades y Gestión Contextual ----
         composable(
             route = Routes.USER_DETAIL,
             arguments = listOf(navArgument(NavArgs.USER_ID) { type = NavType.IntType })
@@ -170,7 +229,42 @@ fun SmartStayNavGraph(
                 actorRole = actorRole
             )
         }
+        composable(route = Routes.DASHBOARD) {
+            val hotelListViewModel: HotelListViewModel = hiltViewModel()
+            val uiState by hotelListViewModel.uiState.collectAsState()
+            val role = remember { runBlocking { tokenManager.getRole() } ?: "" }
 
+            HotelListScreen(
+                uiState = uiState,
+                role = role,
+                onRefresh = hotelListViewModel::fetchAllHotels,
+                onLogout = {
+                    hotelListViewModel.logout(onSuccess = {
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    })
+                },
+                onHotelSelected = { hotelId ->
+                    navController.navigate("room_list/$hotelId")
+                },
+                onEditHotelSelected = { hotelId ->
+                    navController.navigate("edit_hotel/$hotelId")
+                },
+                onAddHotel = {
+                    navController.navigate(Routes.ADD_HOTEL)
+                },
+                onAddRoom = { hotelId ->
+                    navController.navigate("add_room/$hotelId")
+                },
+                onNavigateToOptions = {
+                    navController.navigate(Routes.ACCOMMODATION_OPTIONS)
+                }
+            )
+        }
+
+
+        // ---- Formulario de Edición Parcial de Cuentas ----
         composable(
             route = Routes.EDIT_USER,
             arguments = listOf(navArgument(NavArgs.USER_ID) { type = NavType.IntType })
@@ -182,10 +276,18 @@ fun SmartStayNavGraph(
             )
         }
 
+        // ---- Cambio Autónomo de Contraseña ----
         composable(route = Routes.CHANGE_PASSWORD) {
             ChangePasswordScreen(navController = navController)
         }
 
+        // Nuevo Bounded Context conectado a la API
+        composable("accommodation_options") {
+            val optionsViewModel: OptionsViewModel = hiltViewModel()
+            OptionsScreen(viewModel = optionsViewModel)
+        }
+
+        //Profile
         composable(route = Routes.PROFILE_LIST) {
             ProfileListScreen(navController = navController)
         }
@@ -206,6 +308,45 @@ fun SmartStayNavGraph(
             ProfileDetailScreen(
                 navController = navController,
                 profileId = profileId
+            )
+        }
+
+        composable(route = Routes.ADD_HOTEL) {
+            AddHotelScreen(navController = navController)
+        }
+
+        composable(
+            route = Routes.EDIT_HOTEL,
+            arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            EditHotelScreen(navController = navController, hotelId = hotelId)
+        }
+
+        composable(
+            route = Routes.ADD_ROOM,
+            arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            AddRoomScreen(navController = navController, hotelId = hotelId)
+        }
+
+        composable(
+            route = Routes.ROOM_LIST,
+            arguments = listOf(
+                navArgument("hotelId") { type = NavType.IntType },
+                navArgument("hotelName") { type = NavType.StringType; nullable = true }
+            )
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            val hotelName = backStackEntry.arguments?.getString("hotelName")
+            RoomListScreen(
+                navController = navController,
+                hotelId = hotelId,
+                hotelName = hotelName,
+                onRoomSelected = { roomId ->
+                    // Flow to bookings
+                }
             )
         }
 
