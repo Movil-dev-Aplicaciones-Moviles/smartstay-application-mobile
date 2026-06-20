@@ -60,6 +60,14 @@ data class UserPermissions(val actorRole: String) {
     val canViewAllUsers: Boolean
         get() = actorRole == "chain_admin" || actorRole == "admin"
 
+    /**
+     * Indica si el actor puede gestionar propiedades (hoteles, habitaciones).
+     *
+     * **Regla de negocio**: administradores corporativos y dueños de hotel (Hosts).
+     */
+    val canManageProperties: Boolean
+        get() = actorRole == "chain_admin" || actorRole == "admin" || actorRole == "host"
+
     // ──────────────────────────────────────────────
     // Permisos condicionados al rol del objetivo
     // ──────────────────────────────────────────────
