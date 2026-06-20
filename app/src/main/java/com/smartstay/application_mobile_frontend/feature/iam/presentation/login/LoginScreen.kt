@@ -75,6 +75,8 @@ fun LoginScreen(
 
             val destination = if (permissions.canManageUsers) {
                 Routes.USER_LIST
+            } else if (userRole == "guest" || userRole == "host") {
+                Routes.DASHBOARD
             } else {
                 // Al loguearse, el backend ya retorna su id de usuario/perfil
                 Routes.profileDetail((uiState as LoginUiState.Success).authenticatedUser.user.id)

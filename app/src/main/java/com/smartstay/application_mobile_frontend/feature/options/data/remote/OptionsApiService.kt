@@ -8,18 +8,18 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 
 interface OptionsApiService {
-    @GET("api/v1/accommodations/options/amenities")
+    @GET("accommodations/options/amenities")
     suspend fun getAmenities(): List<String>
 
-    @POST("api/v1/accommodations/options/amenities")
+    @POST("accommodations/options/amenities")
     suspend fun saveAmenity(@Body amenity: AmenityDto): AmenityDto
 
-    @PUT("api/v1/accommodations/options/amenities")
+    @PUT("accommodations/options/amenities")
     suspend fun updateAmenity(@Body amenity: AmenityDto): AmenityDto
 
-    @GET("api/v1/accommodations/options/categories")
+    @GET("accommodations/options/categories")
     suspend fun getHotelCategories(): List<String>
 
-    @POST("api/v1/accommodations/options/categories")
+    @POST("accommodations/options/categories")
     suspend fun saveHotelCategory(@Body category: HotelCategoryDto): HotelCategoryDto
 }

@@ -5,7 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -26,11 +30,12 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import androidx.navigation.compose.rememberNavController
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListScreen
 
 import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
-import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
-import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
-import com.smartstay.application_mobile_frontend.feature.options.presentation.HotelListScreen
+//import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
+//import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
+//import com.smartstay.application_mobile_frontend.feature.options.presentation.HotelListScreen
 import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsScreen
 import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsViewModel
 
@@ -52,6 +57,10 @@ object Routes {
     const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
 
+    const val ACCOMMODATION_OPTIONS = "accommodation_options"
+
+    const val DASHBOARD = "dashboard"
+
     /** Construye la ruta concreta para el detalle de usuario dado su [userId]. */
     fun userDetail(userId: Int): String = "user_detail/$userId"
 
@@ -70,6 +79,7 @@ object Routes {
 object NavArgs {
     const val USER_ID = "userId"
     const val PROFILE_ID = "profileId"
+
 }
 
 // ---------------------------------------------------------------------------
@@ -115,6 +125,8 @@ fun SmartStayNavGraph(navController: NavHostController) {
             val permissions = UserPermissions(role)
             if (permissions.canManageUsers) {
                 Routes.USER_LIST
+            } else if (role.lowercase() == "guest" || role.lowercase() == "host") {
+                Routes.DASHBOARD
             } else {
                 Routes.profileDetail(currentUserId)
             }
@@ -156,16 +168,23 @@ fun SmartStayNavGraph(navController: NavHostController) {
                 userId = userId,
                 actorRole = actorRole
             )
+
+
+        }
+        composable(route = Routes.DASHBOARD) {
+            val hotelListViewModel: HotelListViewModel = hiltViewModel()
+            val uiState by hotelListViewModel.uiState.collectAsState()
+
+            HotelListScreen(
+                uiState = uiState,
+                onRefresh = hotelListViewModel::fetchAllHotels,
+                onNavigateToOptions = {
+                    navController.navigate(Routes.ACCOMMODATION_OPTIONS)
+                }
+            )
         }
 
-                HotelListScreen(
-                    uiState = hotelUiState,
-                    onRefresh = hotelListViewModel::fetchAllHotels,
-                    onNavigateToOptions = {
-                        navController.navigate("accommodation_options")
-                    }
-                )
-            }
+
         // ---- Formulario de Edición Parcial de Cuentas ----
         composable(
             route = Routes.EDIT_USER,

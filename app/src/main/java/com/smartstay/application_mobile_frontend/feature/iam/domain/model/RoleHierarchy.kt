@@ -21,6 +21,7 @@ object RoleHierarchy {
         "staff" to 1,
         "housekeeping" to 1,
         "maintenance" to 1,
+        "host" to 0,
         "guest" to 0
     )
 
