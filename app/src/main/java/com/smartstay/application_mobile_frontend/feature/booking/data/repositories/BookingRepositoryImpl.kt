@@ -14,15 +14,15 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-abstract class BookingRepositoryImpl @Inject constructor(
-    private val apiService: BookingApiService
+class BookingRepositoryImpl @Inject constructor(
+    private val apiService: BookingApiService,
 ) : BookingRepository {
 
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
     // ============ ADMIN ============
 
-    suspend fun getAllBookings(): Result<List<Booking>> {
+    override suspend fun getBookings(): Result<List<Booking>> {
         return withContext(Dispatchers.IO) {
             try {
                 val dtos = apiService.getAllBookings()
@@ -33,10 +33,10 @@ abstract class BookingRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getBookingById(bookingId: Int): Result<Booking> {
+    override suspend fun getBookingById(id: Int): Result<Booking> {
         return withContext(Dispatchers.IO) {
             try {
-                val dto = apiService.getBookingById(bookingId)
+                val dto = apiService.getBookingById(id)
                 Result.success(dto.toDomain())
             } catch (e: Exception) {
                 Result.failure(e)
@@ -44,10 +44,10 @@ abstract class BookingRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun confirmBooking(bookingId: Int): Result<Booking> {
+    override suspend fun confirmBooking(id: Int): Result<Booking> {
         return withContext(Dispatchers.IO) {
             try {
-                val dto = apiService.confirmBooking(bookingId)
+                val dto = apiService.confirmBooking(id)
                 Result.success(dto.toDomain())
             } catch (e: Exception) {
                 Result.failure(e)
@@ -55,10 +55,10 @@ abstract class BookingRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun cancelBooking(bookingId: Int): Result<Booking> {
+    override suspend fun cancelBooking(id: Int): Result<Booking> {
         return withContext(Dispatchers.IO) {
             try {
-                val dto = apiService.cancelBooking(bookingId)
+                val dto = apiService.cancelBooking(id)
                 Result.success(dto.toDomain())
             } catch (e: Exception) {
                 Result.failure(e)
@@ -79,14 +79,14 @@ abstract class BookingRepositoryImpl @Inject constructor(
 
     // ============ GUEST ============
 
-     suspend fun createBooking(
+    override suspend fun createBooking(
         roomId: Int,
         guestName: String,
         guestEmail: String,
         checkInDate: LocalDate,
         checkOutDate: LocalDate,
         numberOfGuests: Int,
-        specialRequests: String?
+        specialRequests: String?,
     ): Result<Booking> {
         return withContext(Dispatchers.IO) {
             try {

@@ -2,7 +2,7 @@
 package com.smartstay.application_mobile_frontend.feature.booking.domain.repository
 
 import com.smartstay.application_mobile_frontend.domain.model.bookings.Booking
-import java.util.Date
+import java.time.LocalDate
 
 interface BookingRepository {
 
@@ -42,8 +42,8 @@ interface BookingRepository {
         roomId: Int,
         guestName: String,
         guestEmail: String,
-        checkInDate: Date,
-        checkOutDate: Date,
+        checkInDate: LocalDate,
+        checkOutDate: LocalDate,
         numberOfGuests: Int,
         specialRequests: String?
     ): Result<Booking>
