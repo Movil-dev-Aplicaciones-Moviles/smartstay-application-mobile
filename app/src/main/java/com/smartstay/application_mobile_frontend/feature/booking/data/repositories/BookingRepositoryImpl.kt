@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class BookingRepositoryImpl @Inject constructor(
-    private val apiService: BookingApiService,
+    private val apiService: BookingApiService
 ) : BookingRepository {
 
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
