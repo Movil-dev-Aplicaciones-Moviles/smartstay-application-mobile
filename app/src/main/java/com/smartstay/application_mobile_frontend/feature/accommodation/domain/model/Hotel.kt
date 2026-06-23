@@ -7,10 +7,9 @@ data class Hotel(
     val address: String,
     val city: String,
     val country: String,
+    val location: String, // Combined string for display
     val imageUrl: String,
-    val description: String,
+    val description: String?,
     val type: String,
-    val amenities: List<String>,
-    val lowestPrice: Double
+    val amenities: List<String>
 )
-

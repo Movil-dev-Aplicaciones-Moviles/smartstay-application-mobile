@@ -1,13 +1,19 @@
+// core/navigation/SmartStayNavGraph.kt
 package com.smartstay.application_mobile_frontend.core.navigation
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.smartstay.application_mobile_frontend.PaymentReturnData
 import com.smartstay.application_mobile_frontend.core.datastore.TokenManager
 import com.smartstay.application_mobile_frontend.feature.iam.domain.model.UserPermissions
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.changepassword.ChangePasswordScreen
@@ -16,14 +22,31 @@ import com.smartstay.application_mobile_frontend.feature.iam.presentation.editus
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.login.LoginScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userdetail.UserDetailScreen
 import com.smartstay.application_mobile_frontend.feature.iam.presentation.userlist.UserListScreen
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.screens.PaymentCheckoutDemoScreen
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.screens.PaymentReturnScreen
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.viewmodel.PaymentCheckoutViewModel
+import com.smartstay.application_mobile_frontend.feature.payments.presentation.viewmodel.PaymentReturnViewModel
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.create.CreateProfileScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.detail.ProfileDetailScreen
 import com.smartstay.application_mobile_frontend.feature.profile.presentation.list.ProfileListScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.AddHotelScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.EditHotelScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.admin.AddRoomScreen
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.RoomListScreen
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
+import androidx.navigation.compose.rememberNavController
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListScreen
+
+import com.smartstay.application_mobile_frontend.feature.accommodation.presentation.HotelListViewModel
+//import com.smartstay.application_mobile_frontend.feature.iam.presentation.screens.SignInScreen
+//import com.smartstay.application_mobile_frontend.feature.iam.presentation.viewmodel.IamViewModel
+//import com.smartstay.application_mobile_frontend.feature.options.presentation.HotelListScreen
+import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsScreen
+import com.smartstay.application_mobile_frontend.feature.options.presentation.OptionsViewModel
 
 // ---------------------------------------------------------------------------
 //  Constantes de rutas del módulo IAM (Operacional y Administrativo)
@@ -42,6 +65,18 @@ object Routes {
     const val PROFILE_LIST = "profile_list"
     const val CREATE_PROFILE = "create_profile/{userEmail}"
     const val PROFILE_DETAIL = "profile_detail/{profileId}"
+    const val PAYMENT_RETURN = "payments/return/{status}?bookingId={bookingId}&amount={amount}"
+    const val ADD_HOTEL = "add_hotel"
+    const val EDIT_HOTEL = "edit_hotel/{hotelId}"
+    const val ADD_ROOM = "add_room/{hotelId}"
+    const val ROOM_LIST = "room_list/{hotelId}?hotelName={hotelName}"
+    const val PAYMENT_CHECKOUT =
+        "payments/checkout?bookingId={bookingId}&hotelId={hotelId}&roomId={roomId}&amount={amount}&hotelName={hotelName}"
+
+    const val ACCOMMODATION_OPTIONS = "accommodation_options"
+
+    const val DASHBOARD = "dashboard"
+    const val MAIN = "main"
 
     /** Construye la ruta concreta para el detalle de usuario dado su [userId]. */
     fun userDetail(userId: Int): String = "user_detail/$userId"
@@ -51,15 +86,44 @@ object Routes {
     fun profileDetail(profileId: Int): String = "profile_detail/$profileId"
 
     fun createProfile(email: String): String = "create_profile/$email"
+
+    fun paymentReturn(status: String, bookingId: Int? = null, amount: Double? = null): String {
+        return "payments/return/$status" +
+            "?bookingId=${bookingId ?: -1}" +
+            "&amount=${amount ?: -1.0}"
+    }
+
+    fun paymentCheckout(
+        bookingId: Int? = null,
+        hotelId: Int? = null,
+        roomId: Int? = null,
+        amount: Double? = null,
+        hotelName: String? = null
+    ): String {
+        val encodedHotelName = hotelName.orEmpty().replace(" ", "%20")
+        return "payments/checkout" +
+            "?bookingId=${bookingId ?: -1}" +
+            "&hotelId=${hotelId ?: -1}" +
+            "&roomId=${roomId ?: -1}" +
+            "&amount=${amount ?: -1.0}" +
+            "&hotelName=$encodedHotelName"
+    }
 }
 
 // ---------------------------------------------------------------------------
 //  Nombres de argumentos de navegación
 // ---------------------------------------------------------------------------
 
+
 object NavArgs {
     const val USER_ID = "userId"
     const val PROFILE_ID = "profileId"
+    const val BOOKING_ID = "bookingId"
+    const val HOTEL_ID = "hotelId"
+    const val ROOM_ID = "roomId"
+    const val AMOUNT = "amount"
+    const val HOTEL_NAME = "hotelName"
+    const val PAYMENT_STATUS = "status"
 }
 
 // ---------------------------------------------------------------------------
@@ -84,7 +148,11 @@ interface SmartStayNavGraphEntryPoint {
  * - Si no hay token → [Routes.LOGIN]
  */
 @Composable
-fun SmartStayNavGraph(navController: NavHostController) {
+fun SmartStayNavGraph(
+    navController: NavHostController,
+    paymentReturnData: PaymentReturnData? = null,
+    onPaymentReturnConsumed: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     // Acceso síncrono al EntryPoint de inyección para TokenManager
@@ -97,18 +165,21 @@ fun SmartStayNavGraph(navController: NavHostController) {
 
     val startDestination: String = remember {
         val hasToken = runBlocking { tokenManager.getToken() != null }
-        val role = runBlocking { tokenManager.getRole() } ?: ""
-        val currentUserId = runBlocking { tokenManager.getUserId() } ?: 0
+        if (hasToken) Routes.MAIN else Routes.LOGIN
+    }
 
-        if (hasToken) {
-            val permissions = UserPermissions(role)
-            if (permissions.canManageUsers) {
-                Routes.USER_LIST
-            } else {
-                Routes.profileDetail(currentUserId)
+    LaunchedEffect(paymentReturnData) {
+        paymentReturnData?.let { data ->
+            navController.navigate(
+                Routes.paymentReturn(
+                    status = data.status,
+                    bookingId = data.bookingId,
+                    amount = data.amount
+                )
+            ) {
+                launchSingleTop = true
             }
-        } else {
-            Routes.LOGIN
+            onPaymentReturnConsumed()
         }
     }
 
@@ -121,7 +192,19 @@ fun SmartStayNavGraph(navController: NavHostController) {
             LoginScreen(navController = navController)
         }
 
-        // ---- Lista Operacional de Personal ----
+        // ---- CONTENEDOR PRINCIPAL CON TABS ----
+        composable(route = Routes.MAIN) {
+            val role = remember { runBlocking { tokenManager.getRole() } ?: "" }
+            val currentUserId = remember { runBlocking { tokenManager.getUserId() } ?: 0 }
+
+            MainScreen(
+                rootNavController = navController,
+                role = role,
+                currentUserId = currentUserId
+            )
+        }
+
+        // ---- Lista Operacional de Personal (Mantenida para navegación directa si fuera necesario) ----
         composable(route = Routes.USER_LIST) {
             UserListScreen(navController = navController)
         }
@@ -146,6 +229,40 @@ fun SmartStayNavGraph(navController: NavHostController) {
                 actorRole = actorRole
             )
         }
+        composable(route = Routes.DASHBOARD) {
+            val hotelListViewModel: HotelListViewModel = hiltViewModel()
+            val uiState by hotelListViewModel.uiState.collectAsState()
+            val role = remember { runBlocking { tokenManager.getRole() } ?: "" }
+
+            HotelListScreen(
+                uiState = uiState,
+                role = role,
+                onRefresh = hotelListViewModel::fetchAllHotels,
+                onLogout = {
+                    hotelListViewModel.logout(onSuccess = {
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    })
+                },
+                onHotelSelected = { hotelId ->
+                    navController.navigate("room_list/$hotelId")
+                },
+                onEditHotelSelected = { hotelId ->
+                    navController.navigate("edit_hotel/$hotelId")
+                },
+                onAddHotel = {
+                    navController.navigate(Routes.ADD_HOTEL)
+                },
+                onAddRoom = { hotelId ->
+                    navController.navigate("add_room/$hotelId")
+                },
+                onNavigateToOptions = {
+                    navController.navigate(Routes.ACCOMMODATION_OPTIONS)
+                }
+            )
+        }
+
 
         // ---- Formulario de Edición Parcial de Cuentas ----
         composable(
@@ -164,10 +281,17 @@ fun SmartStayNavGraph(navController: NavHostController) {
             ChangePasswordScreen(navController = navController)
         }
 
+        // Nuevo Bounded Context conectado a la API
+        composable("accommodation_options") {
+            val optionsViewModel: OptionsViewModel = hiltViewModel()
+            OptionsScreen(viewModel = optionsViewModel)
+        }
+
         //Profile
         composable(route = Routes.PROFILE_LIST) {
             ProfileListScreen(navController = navController)
         }
+
         composable(
             route = Routes.CREATE_PROFILE,
             arguments = listOf(navArgument("userEmail") { type = NavType.StringType })
@@ -186,5 +310,132 @@ fun SmartStayNavGraph(navController: NavHostController) {
                 profileId = profileId
             )
         }
+
+        composable(route = Routes.ADD_HOTEL) {
+            AddHotelScreen(navController = navController)
+        }
+
+        composable(
+            route = Routes.EDIT_HOTEL,
+            arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            EditHotelScreen(navController = navController, hotelId = hotelId)
+        }
+
+        composable(
+            route = Routes.ADD_ROOM,
+            arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            AddRoomScreen(navController = navController, hotelId = hotelId)
+        }
+
+        composable(
+            route = Routes.ROOM_LIST,
+            arguments = listOf(
+                navArgument("hotelId") { type = NavType.IntType },
+                navArgument("hotelName") { type = NavType.StringType; nullable = true }
+            )
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: 0
+            val hotelName = backStackEntry.arguments?.getString("hotelName")
+            RoomListScreen(
+                navController = navController,
+                hotelId = hotelId,
+                hotelName = hotelName,
+                onRoomSelected = { room ->
+                    navController.navigate(
+                        Routes.paymentCheckout(
+                            hotelId = room.hotelId,
+                            roomId = room.id,
+                            amount = room.price,
+                            hotelName = hotelName
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = Routes.PAYMENT_RETURN,
+            arguments = listOf(
+                navArgument(NavArgs.PAYMENT_STATUS) { type = NavType.StringType },
+                navArgument(NavArgs.BOOKING_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.AMOUNT) {
+                    type = NavType.FloatType
+                    defaultValue = -1f
+                }
+            )
+        ) { backStackEntry ->
+            val status = backStackEntry.arguments?.getString(NavArgs.PAYMENT_STATUS).orEmpty()
+            val bookingId = backStackEntry.arguments?.getInt(NavArgs.BOOKING_ID).toNullableId()
+            val amount = backStackEntry.arguments
+                ?.getFloat(NavArgs.AMOUNT)
+                ?.takeIf { it >= 0f }
+                ?.toDouble()
+            val paymentReturnViewModel: PaymentReturnViewModel = hiltViewModel()
+
+            PaymentReturnScreen(
+                status = status,
+                bookingId = bookingId,
+                amount = amount,
+                viewModel = paymentReturnViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Routes.PAYMENT_CHECKOUT,
+            arguments = listOf(
+                navArgument(NavArgs.BOOKING_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.HOTEL_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.ROOM_ID) {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument(NavArgs.AMOUNT) {
+                    type = NavType.FloatType
+                    defaultValue = -1f
+                },
+                navArgument(NavArgs.HOTEL_NAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val paymentCheckoutViewModel: PaymentCheckoutViewModel = hiltViewModel()
+            val bookingId = backStackEntry.arguments?.getInt(NavArgs.BOOKING_ID).toNullableId()
+            val hotelId = backStackEntry.arguments?.getInt(NavArgs.HOTEL_ID).toNullableId()
+            val roomId = backStackEntry.arguments?.getInt(NavArgs.ROOM_ID).toNullableId()
+            val amount = backStackEntry.arguments
+                ?.getFloat(NavArgs.AMOUNT)
+                ?.takeIf { it >= 0f }
+                ?.toDouble()
+            val hotelName = backStackEntry.arguments
+                ?.getString(NavArgs.HOTEL_NAME)
+                ?.takeIf { it.isNotBlank() }
+
+            PaymentCheckoutDemoScreen(
+                viewModel = paymentCheckoutViewModel,
+                onBack = { navController.popBackStack() },
+                bookingId = bookingId,
+                hotelId = hotelId,
+                roomId = roomId,
+                amount = amount,
+                hotelName = hotelName
+            )
+        }
     }
 }
+
+private fun Int?.toNullableId(): Int? = this?.takeIf { it > 0 }

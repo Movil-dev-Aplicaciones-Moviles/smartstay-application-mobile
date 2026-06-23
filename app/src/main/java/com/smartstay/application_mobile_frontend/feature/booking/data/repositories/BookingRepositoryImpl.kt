@@ -11,9 +11,7 @@ import com.smartstay.application_mobile_frontend.feature.booking.domain.reposito
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import javax.inject.Inject
 
 class BookingRepositoryImpl @Inject constructor(
@@ -85,20 +83,17 @@ class BookingRepositoryImpl @Inject constructor(
         roomId: Int,
         guestName: String,
         guestEmail: String,
-        checkInDate: Date,
-        checkOutDate: Date,
+        checkInDate: LocalDate,
+        checkOutDate: LocalDate,
         numberOfGuests: Int,
-        specialRequests: String?
+        specialRequests: String?,
     ): Result<Booking> {
         return withContext(Dispatchers.IO) {
             try {
-                val checkInLocalDate = checkInDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-                val checkOutLocalDate = checkOutDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-
                 val request = CreateBookingRequest(
                     roomId = roomId,
-                    checkInDate = checkInLocalDate.format(dateFormatter),
-                    checkOutDate = checkOutLocalDate.format(dateFormatter),
+                    checkInDate = checkInDate.format(dateFormatter),
+                    checkOutDate = checkOutDate.format(dateFormatter),
                     numberOfGuests = numberOfGuests,
                     specialRequests = specialRequests
                 )

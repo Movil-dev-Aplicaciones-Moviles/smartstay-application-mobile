@@ -133,7 +133,13 @@ fun UserDetailScreen(
             TopAppBar(
                 title = { Text(text = stringResource(R.string.userdetail_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Routes.MAIN) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.userdetail_back_desc))
                     }
                 },

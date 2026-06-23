@@ -10,11 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.smartstay.application_mobile_frontend.core.navigation.Routes
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +28,7 @@ fun ProfileDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     val permissions = viewModel.permissions
     val currentEmail = viewModel.currentEmail
+    val context = LocalContext.current
 
     // Disparamos la carga al entrar a la cancha
     LaunchedEffect(profileId) {
@@ -170,7 +173,11 @@ fun ProfileDetailScreen(
                         if (isOwnProfile) {
                             Button(
                                 onClick = {
-                                    // Aquí llamarás al método PUT para actualizar tus datos personales en el futuro
+                                    // Placeholder para actualización: Simulación de éxito y navegación
+                                    Toast.makeText(context, "Información actualizada correctamente", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Routes.DASHBOARD) {
+                                        popUpTo(Routes.PROFILE_DETAIL) { inclusive = true }
+                                    }
                                 },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = MaterialTheme.shapes.medium
